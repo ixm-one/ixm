@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+npm run --silent lint:staged
+
+branch=$(git branch --show-current)
+
+if test "${branch}" != "main"; then
+  exit 0
+fi
+
+fmt --width=79 <<EOT
+                           ❌ Halting Commit ❌
+ You appear to be trying to commit directly to main. Create a new branch by
+ running:
+
+                         git switch -C <branch-name>
+
+ If you are sure you wish to commit to main, instead run:
+
+                           git commit --no-verify
+
+ NOTE: There is no guarantee your code will still pass any workflow checks.
+EOT
+exit 1

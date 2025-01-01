@@ -1,0 +1,106 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap");
+
+:root {
+  --vp-home-hero-image-background-image: conic-gradient(
+    from 160deg,
+    var(--ixm-red),
+    var(--ixm-green),
+    var(--ixm-blue)
+  );
+  --vp-home-hero-image-filter: blur(48px);
+  --vp-font-family-mono: "Jetbrains Mono", monospace;
+  --vp-code-line-height: 1.25;
+  --vp-sidebar-width: 290px;
+
+  --select: var(--select-lite);
+
+  --ixm-green: #9ccc65;
+  --ixm-blue: #61aeee;
+  --ixm-red: #f92672;
+
+  --select-lite: #ffe9b4;
+  --select-dark: #8189ae;
+}
+
+html.dark {
+  --select: var(--select-dark);
+}
+
+::selection {
+  background-color: var(--select);
+}
+
+code span::selection {
+  background-color: var(--shiki-light);
+  color: var(--vp-code-block-bg);
+}
+
+code span {
+  text-decoration: var(--shiki-light-text-decoration);
+  font-weight: var(--shiki-light-font-weight);
+  font-style: var(--shiki-light-font-style);
+}
+
+.dark code span {
+  text-decoration: var(--shiki-dark-text-decoration);
+  font-weight: var(--shiki-dark-font-weight);
+  font-style: var(--shiki-dark-font-style);
+}
+
+.dark code span::selection {
+  background-color: var(--shiki-dark);
+}
+
+.dark .vp-doc div[class*="language-"] {
+  --vp-code-block-bg: #212830;
+}
+
+.vp-doc div[class*="language-"] {
+  --vp-code-block-bg: #f9f6fc;
+}
+
+span.ixm-green {
+  -webkit-text-fill-color: var(--ixm-green);
+  color: var(--ixm-green);
+}
+
+span.ixm-blue {
+  -webkit-text-fill-color: var(--ixm-blue);
+  color: var(--ixm-blue);
+}
+
+span.ixm-red {
+  -webkit-text-fill-color: var(--ixm-red);
+  color: var(--ixm-red);
+}
+
+.github-alert.note p:first-child::before {
+  content: "ℹ";
+}
+.github-alert.tip p:first-child::before {
+  content: "💡";
+}
+.github-alert.warning p:first-child::before {
+  content: "⚠";
+}
+.github-alert.important p:first-child::before {
+  content: "🚨";
+}
+.github-alert.caution p:first-child::before {
+  content: "💀";
+}
+
+.vp-doc [class*="language-"] pre {
+  --select: var(--select-lite);
+}
+
+.group:has([role="button"]) .VPSidebarItem.level-0 .items {
+  padding-left: 16px !important;
+  border-left: 1px solid var(--vp-c-divider);
+  border-radius: 2px;
+  transition: background-color 0.25s;
+}
+
+dd + dt {
+  margin-top: 1lh;
+}

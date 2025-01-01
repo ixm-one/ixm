@@ -1,0 +1,35 @@
+# TODO: Make some jobs run only on specific file changes
+# TODO: make this a workflow_call so it is used as a building block?
+name: Lint
+on:
+  pull_request:
+    types: [opened, synchronize]
+jobs:
+  actions:
+    runs-on: ubuntu-latest
+    name: Actions
+    steps:
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-actionlint@v1
+        with:
+          reporter: github-pr-review
+  typos:
+    runs-on: ubuntu-latest
+    name: Typos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-typos@v1
+        with:
+          typos_flags: --config ${{github.workspace}}/.github/typos.toml
+          reporter: github-pr-review
+  renovate:
+    runs-on: ubuntu-latest
+    name: Renovate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          cache-dependency-path: "**/package-lock.json"
+          cache: npm
+      - run: npm ci
+      - run: npx --no -- renovate-config-validator

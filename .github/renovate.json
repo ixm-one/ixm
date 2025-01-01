@@ -1,0 +1,55 @@
+{
+  "extends": ["config:base", "npm:unpublishSafe", ":gitSignOff"],
+  "schedule": ["after 12pm on sunday"],
+  "labels": ["renovate:dependencies"],
+  "timezone": "America/Los_Angeles",
+  "rangeStrategy": "auto",
+  "rebaseWhen": "behind-base-branch",
+  "github-actions": {
+    "addLabels": ["renovate:actions"],
+    "additionalBranchPrefix": "actions/",
+    "commitMessagePrefix": "chore(actions)",
+    "pin": {
+      "groupName": "GitHub Actions",
+      "group": {
+        "commitMessageTopic": "{{{groupName}} Workflows"
+      }
+    },
+    "pinDigests": true,
+    "rangeStrategy": "pin"
+  },
+  "npm": {
+    "addLabels": ["docs:node"],
+    "additionalBranchPrefix": "node/",
+    "commitMessageTopic": "chore(node)",
+    "pin": {
+      "groupName": "NodeJS"
+    },
+    "postUpdateOptions": ["npmDedupe"],
+    "rangeStrategy": "auto"
+  },
+  "packageRules": [
+    {
+      "groupName": "Common Actions",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["actions/*"]
+    },
+    {
+      "groupName": "Setup Actions",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["/^[^/]+[/]setup-.+$/"]
+    },
+    {
+      "addLabels": ["docs:markdown"],
+      "groupName": "Markdown",
+      "groupSlug": "markdown",
+      "matchPackageNames": ["markdown-it-*"]
+    },
+    {
+      "addLabels": ["docs:vitepress"],
+      "groupName": "Vitepress",
+      "groupSlug": "vitepress",
+      "matchPackageNames": ["vitepress", "vitepress-*"]
+    }
+  ]
+}

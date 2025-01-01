@@ -1,0 +1,35 @@
+name: Pull Request
+on:
+  pull_request:
+    types: [opened, synchronize, edited]
+jobs:
+  title:
+    runs-on: ubuntu-latest
+    name: Check PR Title
+    id: title
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          cache-dependency-path: "**/package-lock.json"
+          cache: npm
+      - run: npm ci
+      - run: echo "${{github.event.pull_request.title}}" > PR_TITLE
+      - run: npx commitlint --edit=PR_TITLE
+
+  # TODO: move this to workflow_call capable runs?
+  #
+  # bsds:
+  #   runs-on: ubuntu-latest
+  #   needs: [title]
+  #   strategy:
+  #     matrix:
+  #       os:
+  #         - { name: dragonflybsd }
+  #         - { name: freebsd }
+  #         - { name: openbsd }
+  #         - { name: netbsd }
+  #   # TODO: Branch for each VM step.
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: vmactions/${{ matrix.os.name }}-vm@v1

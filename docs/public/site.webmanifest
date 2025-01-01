@@ -1,0 +1,15 @@
+{
+  "name": "Izzy's eXtension Modules",
+  "short_name": "IXM",
+  "start_url": "index.html",
+  "icons": [
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "display": "standalone"
+}
