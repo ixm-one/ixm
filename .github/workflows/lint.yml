@@ -30,7 +30,7 @@ jobs:
       - uses: fkirc/skip-duplicate-actions@v5
         id: sda
         with:
-          paths: [.github/renovate.json]
+          paths: '[".github/renovate.json"]'
   renovate:
     runs-on: ubuntu-latest
     name: Renovate
