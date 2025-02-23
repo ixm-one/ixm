@@ -23,7 +23,7 @@
     "rangeStrategy": "pin"
   },
   "npm": {
-    "addLabels": ["docs:node"],
+    "addLabels": ["renovate:node"],
     "additionalBranchPrefix": "node/",
     "pin": {
       "groupName": "NodeJS"
@@ -43,13 +43,11 @@
       "matchPackageNames": ["/^[^/]+[/]setup-.+$/"]
     },
     {
-      "addLabels": ["docs:markdown"],
       "groupName": "Markdown",
       "groupSlug": "markdown",
       "matchPackageNames": ["markdown-it-*"]
     },
     {
-      "addLabels": ["docs:vitepress"],
       "groupName": "Vitepress",
       "groupSlug": "vitepress",
       "matchPackageNames": ["vitepress", "vitepress-*"]
