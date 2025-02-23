@@ -4,7 +4,11 @@ export default {
   extends: ["@commitlint/config-conventional"],
   defaultIgnores: true,
   rules: {
-    "subject-case": [RuleConfigSeverity.Error, `always`, [`sentence-case`]],
+    "subject-case": [
+      RuleConfigSeverity.Error,
+      `always`,
+      [`sentence-case`, `lower-case`],
+    ],
     "scope-case": [RuleConfigSeverity.Error, `always`, [`kebab-case`]],
     "scope-enum": [
       RuleConfigSeverity.Error,
