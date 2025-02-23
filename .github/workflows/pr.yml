@@ -14,8 +14,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: |
-        cat ${GITHUB_EVENT_PATH}
-        exit 1
+          cat ${GITHUB_EVENT_PATH}
+          exit 1
       - run: echo "${{github.event.pull_request.title}}" > PR_TITLE
         env:
           PR_TITLE: ${{github.event.pull_request.title}}
