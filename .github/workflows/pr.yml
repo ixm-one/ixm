@@ -6,7 +6,6 @@ jobs:
   title:
     runs-on: ubuntu-latest
     name: Check PR Title
-    id: title
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -14,7 +13,7 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
           cache: npm
       - run: npm ci
-      - run: echo "${{github.event.pull_request.title}}" > PR_TITLE
+      - run: jq -r '.pull_request.title' "${GITHUB_EVENT_PATH}" > PR_TITLE
       - run: npx commitlint --edit=PR_TITLE
 
   # TODO: move this to workflow_call capable runs?

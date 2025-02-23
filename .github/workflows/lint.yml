@@ -31,5 +31,4 @@ jobs:
         with:
           cache-dependency-path: "**/package-lock.json"
           cache: npm
-      - run: npm ci
-      - run: npx --no -- renovate-config-validator
+      - run: npm exec --package=renovate -- renovate-config-validator
