@@ -1,3 +1,5 @@
+include(CompilerLauncher)
+
 cmake_language(CALL ixm::package::program NAMES sccache VERSION)
 
 cmake_language(CALL ixm::package::check)

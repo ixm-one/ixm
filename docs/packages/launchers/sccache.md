@@ -71,4 +71,15 @@ Because so many of these values can be set with generator expressions, it
 allows users a great amount of flexibility to work around the instance where
 `sccache` could not be found.
 
+If using the `CompilerLauncher` module provided by IXM, you can use the
+`target_compiler_launcher` command to set all of the correct properties,
+including properties for the Xcode generator.
 
+```cmake
+find_package(sccache)
+
+target_compiler_launcher(${target}
+  LAUNCHER sccache::sccache
+  PRIVATE CXX C
+  OPTIONAL)
+```

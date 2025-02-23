@@ -1,3 +1,5 @@
+include(CompilerLauncher)
+
 cmake_language(CALL ixm::find::program
   NAMES ccache
   DESCRIPTION "Path to ccache executable"
