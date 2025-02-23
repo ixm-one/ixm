@@ -13,7 +13,7 @@ export default {
     "scope-enum": [
       RuleConfigSeverity.Error,
       `always`,
-      [`actions`, `github`, `cmake`, `docs`, `renovate`, `config`],
+      [`actions`, `github`, `cmake`, `docs`, `renovate`, `tools`, `package`],
     ],
   },
 };

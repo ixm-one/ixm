@@ -1,5 +1,10 @@
 {
-  "extends": ["config:recommended", "npm:unpublishSafe", ":gitSignOff"],
+  "extends": [
+    "config:recommended",
+    "npm:unpublishSafe",
+    ":gitSignOff",
+    ":semanticCommitScope(package)"
+  ],
   "schedule": ["after 12pm on sunday"],
   "labels": ["renovate:dependencies"],
   "timezone": "America/Los_Angeles",
@@ -8,7 +13,6 @@
   "github-actions": {
     "addLabels": ["renovate:actions"],
     "additionalBranchPrefix": "actions/",
-    "commitMessagePrefix": "chore(actions)",
     "pin": {
       "groupName": "GitHub Actions",
       "group": {
@@ -21,7 +25,6 @@
   "npm": {
     "addLabels": ["docs:node"],
     "additionalBranchPrefix": "node/",
-    "commitMessageTopic": "chore(node)",
     "pin": {
       "groupName": "NodeJS"
     },
