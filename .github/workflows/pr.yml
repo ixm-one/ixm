@@ -13,7 +13,7 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
           cache: npm
       - run: npm ci
-      - run: cat "${GITHUB_EVENT_PATH}" | jq -r '.pull_request.title' > PR_TITLE
+      - run: jq -r '.pull_request.title' "${GITHUB_EVENT_PATH}" > PR_TITLE
       - run: npx commitlint --edit=PR_TITLE
 
   # TODO: move this to workflow_call capable runs?
