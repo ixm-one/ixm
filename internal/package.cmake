@@ -151,6 +151,13 @@ function (ixm::package::import)
         TARGET ${target})
     endforeach()
   endforeach()
+
+  get_property(targets GLOBAL PROPERTY ${prefix}::targets)
+  cmake_print_variables(prefix targets)
+  foreach (target IN LISTS targets)
+    cmake_language(CALL ixm::package::target TARGET ${target})
+  endforeach()
+
 endfunction()
 
 function (ixm::package::target)
@@ -160,6 +167,7 @@ function (ixm::package::target)
   cmake_language(CALL 🈯::ixm::package::prefix)
   set(prefix ${prefix}::${ARG_TARGET})
   # Each variable contains a variable name, thus we need to "expand" it out.
+  cmake_print_variables(prefix)
   get_property(version GLOBAL PROPERTY ${prefix}::version)
   get_property(program GLOBAL PROPERTY ${prefix}::program)
   get_property(library GLOBAL PROPERTY ${prefix}::library)
@@ -208,8 +216,6 @@ function (ixm::package::target)
         VERSION "${version}"
     )
   endif()
-
-
 endfunction()
 
 #[[ Wrapper around set_package_properties to make it easier to work with ]]
