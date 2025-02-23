@@ -6,7 +6,6 @@ jobs:
   title:
     runs-on: ubuntu-latest
     name: Check PR Title
-    id: title
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
