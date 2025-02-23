@@ -28,8 +28,9 @@ jobs:
       should-skip: ${{steps.sda.outputs.should_skip}}
     steps:
       - uses: fkirc/skip-duplicate-actions@v5
-        paths: .github/renovate.json
         id: sda
+        with:
+          paths: .github/renovate.json
   renovate:
     runs-on: ubuntu-latest
     name: Renovate
