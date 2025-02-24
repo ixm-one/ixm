@@ -20,7 +20,10 @@ function (target_compiler_launcher target)
       $<TARGET_PROPERTY:${ARG_LAUNCHER},IMPORTED_LOCATION>,
       $<TARGET_FILE:${ARG_LAUNCHER}>
     >,
-    $<PATH:CMAKE_PATH,${${ARG_LAUNCHER}_EXECUTABLE}>
+    $<
+      $<BOOL:${${ARG_LAUNCHER}_EXECUTABLE}>:
+      $<PATH:CMAKE_PATH,${${ARG_LAUNCHER}_EXECUTABLE}>
+    >
   >)
 
   set(no.pch.timestamp SHELL:-Xclang$<SEMICOLON>-fno-pch-timestamp)

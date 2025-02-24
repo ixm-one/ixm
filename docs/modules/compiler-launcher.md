@@ -12,7 +12,8 @@ compiler launcher by initializing the default variable, or by setting a
 launcher on a per-target basis.
 
 IXM also provides several `find_package(MODULE)` files for finding two very
-well known compiler launchers, `ccache` and `sccache`.
+well known compiler launchers, [`ccache`](/packages/launchers/ccache) and
+[`sccache`](/packages/launchers/sccache).
 
 ## Commands
 
@@ -36,7 +37,7 @@ user is using `clang` as the given language's compiler.
 #### Required Parameters {#target_compiler_launcher/required}
 
 `target`
-: Name of a target to operate on
+: Name of the target to operate on
 
 #### Keyword Parameters {#target_compiler_launcher/keyword}
 
@@ -46,9 +47,41 @@ user is using `clang` as the given language's compiler.
   properties for the target.
 
 `LAUNCHER`
-: Name of an `IMPORTED` target, a path to an executable file, or the name of an
-  executable that can be found via `find_program` (not `ixm::find::program`).
+: Name of a target, a path to an executable file, or the name of an executable
+  that can be found via `find_program` (not `ixm::find::program`).
+: If the name of a target is given, it does not have to exist at the time of
+  the call. As long as it exists at the generation step, it will be used. The
+  target can be either an `IMPORTED` target, or a target from the current
+  project.
+: If the name of an `IMPORTED` target is given, its `IMPORTED_LOCATION`
+  property will be read. If this property is empty, no launcher will be set.
+: If the name or path of an executable is given, it will be stored in a
+  `${LAUNCHER}_EXECUTABLE` cache variable.
+: > [!WARNING]
+  > The `${LAUNCHER}_EXECUTABLE` cache variable can sometimes be set if the
+  > name of a target is given and it already exists on disk. In these
+  > instances, the target will still be prioritized over the variable.
+: > [!WARNING]
+  > If the `${LAUNCHER}_EXECUTABLE` is not found *and* no valid target name is
+  > given, the compiler launcher property will be empty, however other
+  > properties such as the `MSVC_DEBUG_INFORMATION_FORMAT` property will still
+  > be set. This is due to limitations in CMake's generator expressions that
+  > prevent the ability to error with a useful message at generation time.
+: > [!IMPORTANT]
+  > If using a target from the current build tree, users *will* have to call
+  > `add_dependencies` themselves manually to ensure the launcher is built
+  > before the current target.
 
-`OPTIONAL`
-: Do not error if the parameter given to `LAUNCHER` does not exist or cannot be
-  found.
+#### Example
+
+```cmake
+find_package(ccache 4.10)
+# If `ccache::ccache` does not exist, the `${PROJECT_NAME}` target
+# will *not* be set to run.
+target_compiler_launcher(${PROJECT_NAME}
+  LAUNCHER ccache::ccache
+  PUBLIC
+    CXX C
+  PRIVATE
+    OBJC)
+```
