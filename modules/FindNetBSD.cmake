@@ -32,7 +32,7 @@ cmake_language(CALL ixm::find::library COMPONENT Wrap NAMES wrap FILE tcpd.h)
 cmake_language(CALL ixm::find::library COMPONENT Utilities NAMES util FILE util.h)
 
 cmake_language(CALL ixm::package::check)
-cmake_language(CALL ixm::package::import)
+
 cmake_language(CALL ixm::package::properties
   DESCRIPTION "NetBSD C Libraries"
   URL "https://man.netbsd.org/intro.3")

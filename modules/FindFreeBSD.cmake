@@ -35,7 +35,7 @@ set(FreeBSD_PMC_FOUND ${FreeBSD_PerformanceCounters_FOUND})
 set(FreeBSD_VGL_FOUND ${FreeBSD_VideoGraphics_FOUND})
 
 cmake_language(CALL ixm::package::check)
-cmake_language(CALL ixm::package::import)
+
 cmake_language(CALL ixm::package::properties
   DESCRIPTION "FreeBSD C libraries"
   URL "https://man.freebsd.org/cgi/man.cgi?intro(3)")

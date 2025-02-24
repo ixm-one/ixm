@@ -27,16 +27,13 @@ function (ixm::find::program)
   cmake_language(CALL 🈯::ixm::find::prologue "" "" "VERSION" ${ARGN})
   cmake_language(CALL 🈯::ixm::default ARG_OUTPUT_VARIABLE ${name}_EXECUTABLE)
 
-  if (DEFINED ARG_VERSION)
-    cmake_parse_arguments(VERSION "" "OPTION;REGEX;VARIABLE;DESCRIPTION" "" ${ARG_VERSION})
-    cmake_language(CALL 🈯::ixm::default VERSION_VARIABLE ${name}_VERSION)
-  endif()
-
   find_program(${ARG_OUTPUT_VARIABLE} NAMES ${ARG_NAMES} ${ARG_UNPARSED_ARGUMENTS})
   cmake_language(CALL 🈯::ixm::find::log)
-  cmake_language(CALL 🈯::ixm::find::properties ${target}::program)
+  cmake_language(CALL 🈯::ixm::find::properties ${prefix}::{${target}}::program)
 
   if (ARG_VERSION AND ARG_OUTPUT_VARIABLE)
+    cmake_parse_arguments(VERSION "" "OPTION;REGEX;VARIABLE;DESCRIPTION" "" ${ARG_VERSION})
+    cmake_language(CALL 🈯::ixm::default VERSION_VARIABLE ${name}_VERSION)
     cmake_language(CALL 🈯::ixm::find::version
       OUTPUT_VARIABLE ${VERSION_VARIABLE}
       DESCRIPTION "${VERSION_DESCRIPTION}"
@@ -76,7 +73,7 @@ function (ixm::find::library)
 
   find_library(${ARG_OUTPUT_VARIABLE} NAMES ${ARG_NAMES} ${ARG_UNPARSED_ARGUMENTS})
   cmake_language(CALL 🈯::ixm::find::log)
-  cmake_language(CALL 🈯::ixm::find::properties ${target}::library)
+  cmake_language(CALL 🈯::ixm::find::properties ${prefix}::{${target}}::library)
 
   if (ARG_HEADER)
     if (ARG_QUIET)
@@ -108,7 +105,7 @@ function (ixm::find::header)
 
   find_path(${ARG_OUTPUT_VARIABLE} NAMES ${ARG_NAMES} ${ARG_UNPARSED_ARGUMENTS})
   cmake_language(CALL 🈯::ixm::log)
-  cmake_language(CALL 🈯::ixm::find::properties ${target}::include)
+  cmake_language(CALL 🈯::ixm::find::properties ${prefix}::{${target}}::include)
 endfunction()
 
 #[============================================================================[
@@ -168,7 +165,7 @@ function (🈯::ixm::find::version)
       set(${ARG_OUTPUT_VARIABLE} "${${ARG_OUTPUT_VARIABLE}}" CACHE STRING "${ARG_DESCRIPTION}")
     endif()
     cmake_language(CALL 🈯::ixm::find::log)
-    set_property(GLOBAL PROPERTY ${prefix}::target::version "${${ARG_OUTPUT_VARIABLE}}")
+    set_property(GLOBAL PROPERTY ${prefix}::{${target}}::version "${${ARG_OUTPUT_VARIABLE}}")
   endif()
 endfunction()
 
@@ -182,41 +179,6 @@ function (🈯::ixm::find::properties property)
     endif()
   endif()
 endfunction()
-
-macro (🈯::ixm::find::prologue options monadic variadic)
-  message(TRACE "Parsing ixm::find arguments")
-  cmake_parse_arguments(ARG
-    "QUIET;${options}"
-    "OUTPUT_VARIABLE;DESCRIPTION;${monadic}"
-    "NAMES;PACKAGE;${variadic}"
-    ${ARGN})
-
-
-  if (CMAKE_FIND_PACKAGE_NAME)
-    cmake_parse_arguments(PACKAGE "OPTIONAL" "COMPONENT;TARGET" "" ${ARG_PACKAGE})
-    set(ARG_PACKAGE ${CMAKE_FIND_PACKAGE_NAME})
-
-    set(prefix ${ARG_PACKAGE})
-    set(target ${ARG_PACKAGE})
-    set(name ${ARG_PACKAGE})
-
-    if (PACKAGE_COMPONENT)
-      set_property(GLOBAL APPEND PROPERTY ${prefix}::components ${PACKAGE_COMPONENT})
-      set(prefix ${prefix}::${PACKAGE_COMPONENT})
-      set(target ${target}::${PACKAGE_COMPONENT})
-      set(name ${ARG_PACKAGE}_${PACKAGE_COMPONENT})
-    endif()
-
-    if (PACKAGE_COMPONENT AND PACKAGE_TARGET)
-      set(name ${name}_${PACKAGE_TARGET})
-    endif()
-
-    set(target ${target}::${PACKAGE_TARGET})
-
-    set_property(GLOBAL APPEND PROPERTY ${prefix}::targets ${target})
-  endif()
-
-endmacro()
 
 # Add the result to the CMake configure log
 function (🈯::ixm::find::log)
@@ -234,3 +196,50 @@ function (🈯::ixm::find::log)
       "= ${${ARG_OUTPUT_VARIABLE}}")
   endif()
 endfunction()
+
+macro (🈯::ixm::find::prologue options monadic variadic)
+  message(TRACE "Parsing ixm::find arguments")
+  cmake_parse_arguments(ARG
+    "QUIET;${options}"
+    "OUTPUT_VARIABLE;DESCRIPTION;${monadic}"
+    "NAMES;PACKAGE;${variadic}"
+    ${ARGN})
+
+  if (CMAKE_FIND_PACKAGE_NAME)
+    cmake_language(CALL 🈯::ixm::default ARG_NAMES ${CMAKE_FIND_PACKAGE_NAME})
+    block (SCOPE_FOR VARIABLES PROPAGATE ARG_DESCRIPTION)
+      list(LENGTH ARG_NAMES length)
+      if (length EQUAL 1)
+        cmake_language(CALL 🈯::ixm::default ARG_DESCRIPTION "Path to ${ARG_NAMES}")
+      endif()
+    endblock()
+
+    cmake_parse_arguments(PACKAGE "OPTIONAL" "COMPONENT;TARGET" "" ${ARG_PACKAGE})
+    set(target ${CMAKE_FIND_PACKAGE_NAME}::${CMAKE_FIND_PACKAGE_NAME})
+    set(prefix ${CMAKE_FIND_PACKAGE_NAME})
+    set(name ${CMAKE_FIND_PACKAGE_NAME})
+
+    if (PACKAGE_COMPONENT)
+      set_property(GLOBAL APPEND PROPERTY ${prefix}::components ${PACKAGE_COMPONENT})
+      set(target ${CMAKE_FIND_PACKAGE_NAME}::${PACKAGE_COMPONENT})
+      set(name ${CMAKE_FIND_PACKAGE_NAME}_${PACKAGE_COMPONENT})
+      set(prefix ${prefix}::${PACKAGE_COMPONENT})
+    endif()
+
+    if (PACKAGE_COMPONENT AND PACKAGE_TARGET)
+      set(name ${name}_${PACKAGE_TARGET})
+    endif()
+
+    # If the TARGET contains `::` we just use the whole name *for* the target,
+    # but there needs to be characters surrounding the `::`
+    if (PACKAGE_TARGET MATCHES ".::.")
+      set(target ${PACKAGE_TARGET})
+    elseif (PACKAGE_TARGET)
+      set(target ${target}::${PACKAGE_TARGET})
+    endif()
+
+    set_property(GLOBAL APPEND PROPERTY ${prefix}::targets ${target})
+  endif()
+endmacro()
+
+
