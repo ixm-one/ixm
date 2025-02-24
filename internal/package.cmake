@@ -109,7 +109,11 @@ function (ixm::package::check)
   cmake_language(CALL 🈯::ixm::package::prefix)
   unset(found)
 
+  # We clean up the components *here* as it's quicker to do rather than "every
+  # time we might append"
   get_property(components GLOBAL PROPERTY ${prefix}::components)
+  list(REMOVE_DUPLICATES components)
+  set_property(GLOBAL PROPERTY ${prefix}::components ${components})
 
   foreach (component IN LISTS components)
     cmake_language(CALL 🈯::ixm::package::component)
@@ -130,6 +134,9 @@ function (ixm::package::check)
     HANDLE_VERSION_RANGE
     HANDLE_COMPONENTS
     NAME_MISMATCHED)
+
+  cmake_language(CALL ixm::package::import)
+
   return(PROPAGATE ${CMAKE_FIND_PACKAGE_NAME}_FOUND ${found})
 endfunction()
 
@@ -151,12 +158,10 @@ function (ixm::package::import)
         TARGET ${target})
     endforeach()
   endforeach()
-
   get_property(targets GLOBAL PROPERTY ${prefix}::targets)
   foreach (target IN LISTS targets)
     cmake_language(CALL ixm::package::target TARGET ${target})
   endforeach()
-
 endfunction()
 
 function (ixm::package::target)
@@ -164,14 +169,13 @@ function (ixm::package::target)
   cmake_language(CALL 🈯::ixm::requires TARGET)
   cmake_language(CALL 🈯::ixm::package::assert)
   cmake_language(CALL 🈯::ixm::package::prefix)
-  set(prefix ${prefix}::${ARG_TARGET})
   # Each variable contains a variable name, thus we need to "expand" it out.
-  get_property(version GLOBAL PROPERTY ${prefix}::version)
-  get_property(program GLOBAL PROPERTY ${prefix}::program)
-  get_property(library GLOBAL PROPERTY ${prefix}::library)
-  get_property(include GLOBAL PROPERTY ${prefix}::include)
-  get_property(compile GLOBAL PROPERTY ${prefix}::options::compile)
-  get_property(link GLOBAL PROPERTY ${prefix}::options::link)
+  get_property(version GLOBAL PROPERTY ${prefix}::{${ARG_TARGET}}::version)
+  get_property(program GLOBAL PROPERTY ${prefix}::{${ARG_TARGET}}::program)
+  get_property(library GLOBAL PROPERTY ${prefix}::{${ARG_TARGET}}::library)
+  get_property(include GLOBAL PROPERTY ${prefix}::{${ARG_TARGET}}::include)
+  get_property(compile GLOBAL PROPERTY ${prefix}::{${ARG_TARGET}}::options::compile)
+  get_property(link GLOBAL PROPERTY ${prefix}::{${ARG_TARGET}}::options::link)
   if (program AND library)
     string(CONFIGURE [[
       PACKAGE: @CMAKE_FIND_PACKAGE_NAME@
@@ -184,7 +188,7 @@ function (ixm::package::target)
 
   # Targets can only have ONE location, so appending to a list and then
   # removing empty items is ideal
-  set(location "${${program}}" "${${library}}")
+  set(location "${program}" "${library}")
   list(REMOVE_ITEM location "")
   set(command add_library)
   set(arguments UNKNOWN)
@@ -194,11 +198,12 @@ function (ixm::package::target)
     set(arguments)
   endif()
 
+  # If there's no location, then it's an INTERFACE library
   if (NOT location)
     set(arguments INTERFACE)
   endif()
 
-  cmake_language(CALL ${command} ${arguments} IMPORTED)
+  cmake_language(CALL ${command} ${ARG_TARGET} ${arguments} IMPORTED)
   # IMPORTED targets can have any properties set, so it doesn't really matter
   # if we add include directories to executables.
   target_include_directories(${target} INTERFACE ${${include}})

@@ -38,7 +38,7 @@ cmake_language(CALL ixm::find::library COMPONENT TLS NAMES tls HEADER tls.h)
 cmake_language(CALL ixm::find::library COMPONENT HID NAMES usbhid HEADER usbhid.h)
 
 cmake_language(CALL ixm::package::check)
-cmake_language(CALL ixm::package::import)
+
 cmake_language(CALL ixm::package::properties
   DESCRIPTION "OpenBSD C Libraries"
   URL "https://man.openbsd.org/intro.3")

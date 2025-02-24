@@ -1,10 +1,12 @@
 cmake_language(CALL ixm::find::program
+  OUTPUT_VARIABLE ${CMAKE_FIND_PACKAGE_NAME}_EXECUTABLE
+  VERSION
   NAMES clang-tidy
-  DESCRIPTION "Path to clang-tidy executable"
-  VERSION)
+  PACKAGE
+    TARGET clang::tidy
+)
 
 cmake_language(CALL ixm::package::check)
-cmake_language(CALL ixm::package::import)
 cmake_language(CALL ixm::package::properties
   DESCRIPTION "Clang based C++ linter tool."
   URL "https://clang.llvm.org/extra/clang-tidy")
