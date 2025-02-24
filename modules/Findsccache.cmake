@@ -1,3 +1,4 @@
+include(CompilerLauncher)
 cmake_language(CALL ixm::package::program VERSION)
 cmake_language(CALL ixm::package::check)
 cmake_language(CALL ixm::package::properties

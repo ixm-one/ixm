@@ -241,5 +241,3 @@ macro (🈯::ixm::find::prologue options monadic variadic)
     set_property(GLOBAL APPEND PROPERTY ${prefix}::targets ${target})
   endif()
 endmacro()
-
-
