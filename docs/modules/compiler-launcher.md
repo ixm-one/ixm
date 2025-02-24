@@ -26,8 +26,13 @@ setting works with:
  - Makefile Generators
  - Xcode Generator
 
-It also works with MSVC, and will set `-fno-pch-timestamp` on the target if the
-user is using `clang` as the given language's compiler.
+It will set `-fno-pch-timestamp` on the target if the user is using `clang` as
+the given language's compiler *and* the command can detect that `sccache` or
+`ccache` is being used as the launcher.
+
+Additionally, if `sccache` or `ccache` are detected as the launcher, the
+`MSVC_DEBUG_INFORMATION_FORMAT` property will be set to `Embedded`
+automatically.
 
 > [!NOTE]
 > Typically, developers will utilize a compiler launcher for caching of object
@@ -37,7 +42,7 @@ user is using `clang` as the given language's compiler.
 #### Required Parameters {#target_compiler_launcher/required}
 
 `target`
-: Name of the target to operate on
+: Name of the target to modify
 
 #### Keyword Parameters {#target_compiler_launcher/keyword}
 
