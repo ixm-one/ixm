@@ -206,9 +206,9 @@ function (ixm::package::target)
   cmake_language(CALL ${command} ${ARG_TARGET} ${arguments} IMPORTED)
   # IMPORTED targets can have any properties set, so it doesn't really matter
   # if we add include directories to executables.
-  target_include_directories(${target} INTERFACE ${${include}})
-  target_compile_options(${target} INTERFACE ${${compile}})
-  target_link_options(${target} INTERFACE ${${link}})
+  target_include_directories(${target} INTERFACE ${include})
+  target_compile_options(${target} INTERFACE ${compile})
+  target_link_options(${target} INTERFACE ${link})
 
   # INTERFACE libraries don't like having non INTERFACE properties set, after
   # all.
