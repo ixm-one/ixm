@@ -211,8 +211,13 @@ macro (🈯::ixm::find::prologue options monadic variadic)
       set(name ${name}_${PACKAGE_TARGET})
     endif()
 
+    if (NOT PACKAGE_COMPONENT AND NOT PACKAGE_TARGET)
+      set(PACKAGE_TARGET ${ARG_PACKAGE})
+    endif()
+
     set(target ${target}::${PACKAGE_TARGET})
 
+    cmake_print_variables(prefix target)
     set_property(GLOBAL APPEND PROPERTY ${prefix}::targets ${target})
   endif()
 
