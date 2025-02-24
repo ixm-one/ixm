@@ -16,7 +16,6 @@ function (target_compiler_launcher target)
     mark_as_advanced(${ARG_LAUNCHER}_EXECUTABLE)
     set(location "${${ARG_LAUNCHER}_EXECUTABLE}")
   endif()
-  cmake_print_variables(location)
 
   set(no.pch.timestamp SHELL:-Xclang$<SEMICOLON>-fno-pch-timestamp)
   string(CONCAT is.cache $<OR:
