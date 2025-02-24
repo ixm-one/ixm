@@ -22,7 +22,7 @@ if ("LLVM" IN_LIST ${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS)
     DESCRIPTION "LLVM profile data tool"
     PACKAGE
       COMPONENT LLVM
-      TARGET ProfData)
+      TARGET ProfileData)
   cmake_language(CALL ixm::find::program
     NAMES llvm-cov
     DESCRIPTION "Code coverage information tool"
