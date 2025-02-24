@@ -45,7 +45,7 @@ cmake_language(CALL ixm::find::library COMPONENT Shell NAMES shlwapi HEADER shlw
 cmake_language(CALL ixm::find::library COMPONENT Sockets NAME Ws2_32 HEADER ws2tcpip.h)
 
 cmake_language(CALL ixm::package::check)
-cmake_language(CALL ixm::package::import)
+
 cmake_language(CALL ixm::package::properties
   DESCRIPTION "Win32 API Libraries"
   URL "https://learn.microsoft.com/en-us/windows/win32/api/")

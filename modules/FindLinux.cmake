@@ -10,6 +10,6 @@ cmake_language(CALL ixm::find::library COMPONENT PAM NAMES pam)
 cmake_language(CALL ixm::find::library COMPONENT Math NAMES m)
 
 cmake_language(CALL ixm::package::check)
-cmake_language(CALL ixm::package::import)
+
 cmake_language(CALL ixm::package::properties
   DESCRIPTION "The Linux Standard Base Libraries")
