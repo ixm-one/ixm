@@ -1,7 +1,6 @@
 include_guard(GLOBAL)
 
 # This is a temporary file until we can move this into the specific module.
-message(TRACE "Setting default properties")
 block (SCOPE_FOR VARIABLES)
   set_property(GLOBAL PROPERTY 🈯::ixm::protobuf::objc::source .pbobjc.m)
   set_property(GLOBAL PROPERTY 🈯::ixm::protobuf::objc::header .pbobjc.h)
@@ -12,9 +11,6 @@ block (SCOPE_FOR VARIABLES)
   set_property(GLOBAL PROPERTY 🈯::ixm::grpc::objc::header .pbrpc.h)
   set_property(GLOBAL PROPERTY 🈯::ixm::grpc::cxx::source .grpc.pb.cc)
   set_property(GLOBAL PROPERTY 🈯::ixm::grpc::cxx::header .grpc.pb.h)
-
-  set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
-  set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED YES) # Removes CDash Targets
 endblock()
 
 message(TRACE "Defining custom protobuf properties")

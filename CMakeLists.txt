@@ -17,6 +17,12 @@ block (SCOPE_FOR VARIABLES) # Setting global variables
   set(CMAKE_DISABLE_SOURCE_CHANGES YES CACHE BOOL "")
 endblock()
 
+block (SCOPE_FOR VARIABLES)
+  message(TRACE "Setting default properties")
+  set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
+  set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED YES) # Removes CDash Targets
+endblock()
+
 block (SCOPE_FOR VARIABLES) # Setting default CMake policies
   message(TRACE "Setting default CMake policies")
   if (NOT 🈯::ixm::${CMAKE_VERSION}::policies)
