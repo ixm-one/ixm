@@ -3,7 +3,11 @@ include_guard(GLOBAL)
 function (target_compiler_launcher target)
   cmake_parse_arguments(ARG "OPTIONAL" "LAUNCHER" "PRIVATE;PUBLIC;INTERFACE" ${ARGN})
   if (TARGET ${ARG_LAUNCHER})
-    set(location $<TARGET_PROPERTY:${ARG_LAUNCHER},IMPORTED_LOCATION>)
+    string(CONCAT location $<IF:
+      $<BOOL:$<TARGET_PROPERTY:${ARG_LAUNCHER},IMPORTED>>,
+      $<TARGET_PROPERTY:${ARG_LAUNCHER},IMPORTED_LOCATION>,
+      $<TARGET_FILE:${ARG_LAUNCHER}>
+    >)
   elseif (IS_EXECUTABLE "${ARG_LAUNCHER}")
     set(location "${ARG_LAUNCHER}")
   else()
