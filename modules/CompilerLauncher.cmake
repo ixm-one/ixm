@@ -20,7 +20,7 @@ function (target_compiler_launcher target)
 
   set(no.pch.timestamp SHELL:-Xclang$<SEMICOLON>-fno-pch-timestamp)
   string(CONCAT is.cache $<OR:
-    $<STREQUAL:$<PATH:GET_STEM,${location}>,sccache>
+    $<STREQUAL:$<PATH:GET_STEM,${location}>,sccache>,
     $<STREQUAL:$<PATH:GET_STEM,${location}>,ccache>
   >)
   string(CONCAT debug.format $<IF:
