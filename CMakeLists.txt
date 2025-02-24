@@ -54,6 +54,7 @@ block (SCOPE_FOR VARIABLES) # Setting internal properties
 endblock()
 
 message(TRACE "Including IXM internal source files")
+include("${CMAKE_CURRENT_LIST_DIR}/internal/validate.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/internal/features.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/internal/package.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/internal/common.cmake")

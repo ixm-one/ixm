@@ -1,25 +1,27 @@
 include_guard(GLOBAL)
 
 function (target_compiler_launcher target)
-  cmake_parse_arguments(ARG "OPTIONAL" "LAUNCHER" "PRIVATE;PUBLIC;INTERFACE" ${ARGN})
-  if (TARGET ${ARG_LAUNCHER})
-    string(CONCAT location $<IF:
+  cmake_parse_arguments(ARG "" "LAUNCHER" "PRIVATE;PUBLIC;INTERFACE" ${ARGN})
+  # It's fine if it's declared as a target later, we just want to reduce some
+  # computation here
+  if (NOT TARGET ${ARG_LAUNCHER})
+    find_program(${ARG_LAUNCHER}_EXECUTABLE
+      NAMES "${ARG_LAUNCHER}"
+      VALIDATOR ixm::validate::executable
+      DOC "Path to the ${ARG_LAUNCHER} executable")
+    mark_as_advanced(${ARG_LAUNCHER}_EXECUTABLE)
+  endif()
+  # Though complicated this has the nice effect of not being a hard error.
+  # Sadly it also means a target or path not existing is silent...
+  string(CONCAT location $<IF:
+    $<BOOL:$<TARGET_NAME_IF_EXISTS:${ARG_LAUNCHER}>>,
+    $<IF:
       $<BOOL:$<TARGET_PROPERTY:${ARG_LAUNCHER},IMPORTED>>,
       $<TARGET_PROPERTY:${ARG_LAUNCHER},IMPORTED_LOCATION>,
       $<TARGET_FILE:${ARG_LAUNCHER}>
-    >)
-  elseif (IS_EXECUTABLE "${ARG_LAUNCHER}")
-    set(location "${ARG_LAUNCHER}")
-  else()
-    find_program(${ARG_LAUNCHER}_EXECUTABLE NAMES ${ARG_LAUNCHER})
-    if (NOT ${ARG_LAUNCHER}_EXECUTABLE AND NOT ARG_OPTIONAL)
-      message(FATAL_ERROR "'${ARG_LAUNCHER}' is neither a TARGET nor is it an executable")
-    elseif (NOT ${ARG_LAUNCHER}_EXECUTABLE)
-      return()
-    endif()
-    mark_as_advanced(${ARG_LAUNCHER}_EXECUTABLE)
-    set(location "${${ARG_LAUNCHER}_EXECUTABLE}")
-  endif()
+    >,
+    $<PATH:CMAKE_PATH,${${ARG_LAUNCHER}_EXECUTABLE}>
+  >)
 
   set(no.pch.timestamp SHELL:-Xclang$<SEMICOLON>-fno-pch-timestamp)
   string(CONCAT is.cache $<OR:
