@@ -3,14 +3,25 @@ on:
   pull_request:
     types: [opened, synchronize, edited]
 jobs:
+  skip:
+    name: Skip Duplicate Actions
+    runs-on: ubuntu-latest
+    outputs:
+      should-skip: ${{steps.sda.outputs.should_skip}}
+    steps:
+      - uses: fkirc/skip-duplicate-actions@v5
+        id: sda
   title:
     runs-on: ubuntu-latest
     name: Check PR Title
+    needs: skip
+    if: needs.skip.outputs.should-skip != 'true'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4
         with:
-          cache-dependency-path: "**/package-lock.json"
+          check-latest: true
+          node-version: 'lts/*'
           cache: npm
       - run: npm ci
       - run: jq -r '.pull_request.title' "${GITHUB_EVENT_PATH}" > PR_TITLE
@@ -32,3 +43,4 @@ jobs:
   #   steps:
   #     - uses: actions/checkout@v4
   #     - uses: vmactions/${{ matrix.os.name }}-vm@v1
+
