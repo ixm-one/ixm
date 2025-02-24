@@ -42,7 +42,7 @@ function (target_compiler_launcher target)
 
   foreach (language IN LISTS ARG_PRIVATE ARG_PUBLIC)
     string(CONCAT is.cache $<AND:
-      $<COMPILE_LANG_ID:${language},AppleClang,Clang>,
+      $<COMPILE_LANG_AND_ID:${language},AppleClang,Clang>,
       ${is.cache}
     >)
     set_target_properties(${target}
