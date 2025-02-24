@@ -29,7 +29,7 @@ function (target_compiler_launcher target)
     $<IF:
       $<BOOL:${CMAKE_MSVC_DEBUG_INFORMATION_FORMAT}>,
       ${CMAKE_MSVC_DEBUG_INFORMATION_FORMAT},
-      $<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase
+      $<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>
     >
   >)
   set_target_properties(${target}
