@@ -5,29 +5,26 @@ if ("GNU" IN_LIST ${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS)
     PACKAGE
       COMPONENT GNU
       TARGET Tool)
-  cmake_language(CALL ixm::check::option::compile CXX --coverage
-    OUTPUT_VARIABLE ${CMAKE_FIND_PACKAGE_NAME}_GNU_COMPILE_OPTIONS
-    LINK_OPTIONS --coverage
-    QUIET)
-  if (${CMAKE_FIND_PACKAGE_NAME}_GNU_COMPILE_OPTIONS)
-    set(${CMAKE_FIND_PACKAGE_NAME}_GNU_COMPILE_FLAGS "--coverage")
-  endif()
+  set(${CMAKE_FIND_PACKAGE_NAME}_GNU_FLAG "--coverage")
   block (SCOPE_FOR VARIABLES)
     set(target ${CMAKE_FIND_PACKAGE_NAME}::GNU)
     set(prefix ${target}:{${target}})
-    string(CONCAT abs.path $<AND:
-      $<BOOL:$<TARGET_PROPERTY:GNU_ABSOLUTE_PATHS>>,
-      $<CXX_COMPILER_ID:GNU>
-    >)
-
-    set_property(GLOBAL APPEND PROPERTY ${target}::variables
-      ${CMAKE_FIND_PACKAGE_NAME}_GNU_COMPILE_FLAGS)
     set_property(GLOBAL APPEND PROPERTY ${target}::targets ${target})
-    set_property(GLOBAL APPEND PROPERTY ${prefix}::options::compile
-        $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage>
-        $<${abs.path}:-fprofile-abs-path>)
-    set_property(GLOBAL APPEND PROPERTY ${prefix}::options::link
-        $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage>)
+    set_property(GLOBAL APPEND PROPERTY ${target}::variables
+      ${CMAKE_FIND_PACKAGE_NAME}_GNU_FLAG)
+    foreach (language IN ITEMS OBJCXX OBJC CXX C)
+      string(CONCAT abs.path $<AND:
+        $<BOOL:$<TARGET_PROPERTY:COVERAGE_GNU_ABSOLUTE_PATHS>>,
+        $<COMPILE_LANG_AND_ID:${language},GNU>
+      >)
+
+      set_property(GLOBAL APPEND PROPERTY ${prefix}::options::compile
+        $<$<COMPILE_LANG_AND_ID:${language},AppleClang,Clang,GNU>:--coverage>
+        $<${abs.path}:-fprofile-abs-path>
+      )
+      set_property(GLOBAL APPEND PROPERTY ${prefix}::options::link
+        $<$<LINK_LANG_AND_ID:${language},AppleClang,Clang,GNU>:--coverage>)
+    endforeach()
   endblock()
 endif()
 
@@ -58,6 +55,7 @@ if ("LLVM" IN_LIST ${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS)
     PACKAGE
       COMPONENT LLVM
       TARGET Tool)
+  # TODO: Skip compilation check
   cmake_language(CALL ixm::check::option::compile CXX -fprofile-instr-generate
     OUTPUT_VARIABLE ${CMAKE_FIND_PACKAGE_NAME}_LLVM_COMPILE_OPTIONS
     COMPILE_OPTIONS -fcoverage-mapping
