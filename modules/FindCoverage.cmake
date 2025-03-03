@@ -377,26 +377,28 @@ function (target_coverage name)
   cmake_parse_arguments(ARG "" "" "PRIVATE;PUBLIC;INTERFACE" ${ARGN})
   get_property(implementation TARGET ${name} PROPERTY COVERAGE_IMPLEMENTATION)
 
-  foreach (target IN LISTS ARG_PRIVATE ARG_PUBLIC)
-    set(is.executable $<STREQUAL:$<TARGET_PROPERTY:${target},TYPE>,EXECUTABLE>)
-    cmake_language(CALL 🈯::ixm::property::get LLVM_INSTRUMENTED_FILENAME
-      PACKAGE Coverage
-      TARGET ${target}
-      CONTEXT)
-    set(properties INSTRUMENTED_SOURCES INSTRUMENTED_EXECUTABLES MERGE_PROFILES)
-    set(values $<TARGET_PROPERTY:${target},SOURCES>
-      $<${is.executable}:$<TARGET_FILE:${target}>>
-      $<${is.executable}:${LLVM_INSTRUMENTED_FILENAME}>)
-    foreach (property value IN ZIP_LISTS properties values)
+  foreach (visibility IN ITEMS PRIVATE PUBLIC)
+    foreach (target IN LISTS ARG_${visibility})
+      set(is.executable $<STREQUAL:$<TARGET_PROPERTY:${target},TYPE>,EXECUTABLE>)
+      cmake_language(CALL 🈯::ixm::property::get LLVM_INSTRUMENTED_FILENAME
+        PACKAGE Coverage
+        TARGET ${target}
+        CONTEXT)
+      set(properties INSTRUMENTED_SOURCES INSTRUMENTED_EXECUTABLES MERGE_PROFILES)
+      set(values $<TARGET_PROPERTY:${target},SOURCES>
+        $<${is.executable}:$<TARGET_FILE:${target}>>
+        $<${is.executable}:${LLVM_INSTRUMENTED_FILENAME}>)
+      foreach (property value IN ZIP_LISTS properties values)
+        set_property(TARGET ${name} APPEND
+          PROPERTY
+            Coverage_LLVM_${property} ${value})
+      endforeach()
       set_property(TARGET ${name} APPEND
         PROPERTY
-          Coverage_LLVM_${property} ${value})
+          ADDITIONAL_CLEAN_FILES $<${is.executable}:${LLVM_INSTRUMENTED_FILENAME}>)
+      target_link_libraries(${target}
+        ${visibility}
+          Coverage::${implementation})
     endforeach()
-    set_property(TARGET ${name} APPEND
-      PROPERTY
-        ADDITIONAL_CLEAN_FILES $<${is.executable}:${LLVM_INSTRUMENTED_FILENAME}>)
-    target_link_libraries(${target}
-      PRIVATE
-        Coverage::${implementation})
   endforeach()
 endfunction()
