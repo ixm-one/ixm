@@ -61,7 +61,7 @@ class Palette {
     red: ["#d5232c", "#df0c24"],
 
     cyan: "#00d0fa",
-    green: "#54d961",
+    green: "#3ca048",
     grey: "#818b98",
     indigo: "#7a82f0",
     lemon: "#d8bd0e",
@@ -71,6 +71,7 @@ class Palette {
     plum: "#c264f2",
     purple: "#a672f3",
     yellow: "#d19d00",
+    codeBackground: "#f5f7f9",
   };
 }
 
@@ -80,6 +81,7 @@ class Light {
   type = "light";
   colors = {
     "editor.foreground": Palette.light.foreground,
+    "editor.background": Palette.light.codeBackground,
   };
   tokenColors = [
     new Token({ scopes: Scopes.COMMENT, color: Palette.light.grey }),
