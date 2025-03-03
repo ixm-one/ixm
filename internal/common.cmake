@@ -58,6 +58,24 @@ function (🈯::ixm::experiment name uuid)
   endif()
 endfunction()
 
+#[[ Used to create a generator expression for getting a property ]]
+function (🈯::ixm::property::get property)
+  cmake_parse_arguments(ARG "CONTEXT" "PACKAGE;TARGET;OUTPUT_VARIABLE" "" ${ARGN})
+  cmake_language(CALL 🈯::ixm::default ARG_OUTPUT_VARIABLE ${property})
+  set(target "${ARG_TARGET},")
+  set(eval GENEX_EVAL:)
+
+  if (ARG_PACKAGE)
+    set(property ${ARG_PACKAGE}_${property})
+  endif()
+
+  if (ARG_CONTEXT AND ARG_TARGET)
+    set(eval TARGET_GENEX_EVAL:${target})
+  endif()
+
+  set(${ARG_OUTPUT_VARIABLE} $<${eval}$<TARGET_PROPERTY:${target}${property}>> PARENT_SCOPE)
+endfunction()
+
 #[[Used to set missing arguments to a well known default]]
 macro(🈯::ixm::default var default)
   if (NOT ${var})

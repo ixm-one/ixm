@@ -14,7 +14,7 @@ if ("GNU" IN_LIST ${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS)
       ${CMAKE_FIND_PACKAGE_NAME}_GNU_FLAG)
     foreach (language IN ITEMS OBJCXX OBJC CXX C)
       string(CONCAT abs.path $<AND:
-        $<BOOL:$<TARGET_PROPERTY:COVERAGE_GNU_ABSOLUTE_PATHS>>,
+        $<BOOL:$<TARGET_PROPERTY:${CMAKE_FIND_PACKAGE_NAME}_GNU_ABSOLUTE_PATHS>>,
         $<COMPILE_LANG_AND_ID:${language},GNU>
       >)
 
@@ -55,16 +55,36 @@ if ("LLVM" IN_LIST ${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS)
     PACKAGE
       COMPONENT LLVM
       TARGET Tool)
-  # TODO: Skip compilation check
-  cmake_language(CALL ixm::check::option::compile CXX -fprofile-instr-generate
-    OUTPUT_VARIABLE ${CMAKE_FIND_PACKAGE_NAME}_LLVM_COMPILE_OPTIONS
-    COMPILE_OPTIONS -fcoverage-mapping
-    LINK_OPTIONS -fprofile-instr-generate
-    QUIET)
+  set(${CMAKE_FIND_PACKAGE_NAME}_LLVM_COMPILE_FLAG "-fprofile-instr-generate -fcoverage-mapping")
+  set(${CMAKE_FIND_PACKAGE_NAME}_LLVM_LINK_FLAG "-fprofile-inst-generate")
+  block (SCOPE_FOR VARIABLES)
+    set(target ${CMAKE_FIND_PACKAGE_NAME}::LLVM)
+    set(prefix ${target}:{${target}})
+    set_property(GLOBAL APPEND PROPERTY ${target}::target ${target})
+    set_property(GLOBAL APPEND PROPERTY ${target}::variables
+      ${CMAKE_FIND_PACKAGE_NAME}_LLVM_COMPILE_FLAG
+      ${CMAKE_FIND_PACKAGE_NAME}_LLVM_LINK_FLAG)
 
-  if (${CMAKE_FIND_PACKAGE_NAME}_LLVM_COMPILE_OPTIONS)
-    set(${CMAKE_FIND_PACKAGE_NAME}_LLVM_COMPILE_FLAGS "-fprofile-instr-generate")
-  endif()
+    string(CONCAT mcdc $<AND:
+      $<CXX_COMPILER_ID:AppleClang,Clang>,
+      $<BOOL:
+        $<GENEX_EVAL:$<TARGET_PROPERTY:LLVM_MCDC>>
+      >
+    >)
+    string(CONCAT coverage-prefix-map $<JOIN:
+      $<GENEX_EVAL:$<TARGET_PROPERTY:LLVM_COVERAGE_PREFIX_MAP>>,
+      -fcoverage-prefix-map=
+    >)
+    string(CONCAT coverage-prefix-maps $<
+      $<BOOL:$<TARGET_PROPERTY:LLVM_COVERAGE_PREFIX_MAP>>:
+      -fcoverage-prefix-map=${coverage-prefix-map}
+    >)
+    string(CONCAT profile.file $<
+      $<BOOL:$<TARGET_PROPERTY:LLVM_PROFILE_FILENAME>>:
+      =$<GENEX_EVAL:$<TARGET_PROPERTY:LLVM_PROFILE_FILENAME>>
+    >)
+  endblock()
+
   # This is where we do manual bookkeeping for the automatic component
   # discovery system, since we're naming a target *after* the component itself
   # for a library we never *technically found*
@@ -90,8 +110,6 @@ if ("LLVM" IN_LIST ${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS)
       =$<GENEX_EVAL:$<TARGET_PROPERTY:LLVM_PROFILE_FILENAME>>
     >)
 
-    set_property(GLOBAL APPEND PROPERTY ${target}::variables
-      ${CMAKE_FIND_PACKAGE_NAME}_LLVM_COMPILE_FLAGS)
     # NOTE(imuerte): I'm proud of myself for making this work, but also
     # bewildered at myself.
     set_property(GLOBAL APPEND PROPERTY ${target}::targets ${target})
@@ -109,13 +127,63 @@ cmake_language(CALL ixm::package::check)
 cmake_language(CALL ixm::package::properties
   DESCRIPTION "Code Coverage Support")
 
-# Setting a default value
-set(IXM_LLVM_COVERAGE_PREFIX_MAP $<TARGET_PROPERTY:SOURCE_DIR>=.
-  CACHE STRING "Default LLVM Coverage prefix map path")
+# Cache variables for default property values.
+block (SCOPE_FOR VARIABLES)
+  if (🈯::ixm::${CMAKE_FIND_PACKAGE_NAME}::CACHE)
+    return()
+  endif()
 
+  string(CONCAT llvm.profile.file $<PATH:APPEND
+    $<TARGET_PROPERTY:BINARY_DIR>,
+    $<CONFIG>,
+    $<PATH:REPLACE_EXTENSION,$<TARGET_PROPERTY:NAME>,profraw>
+  >)
+
+  # These are inaccurate until the command is done.
+  set(IXM_${CMAKE_FIND_PACKAGE_NAME}_LLVM_PREFIX_MAP "$<TARGET_PROPERTY:SOURCE_DIR>=."
+    CACHE STRING "Default coverage prefix map. Use `<old>=<new>`")
+  set(IXM_${CMAKE_FIND_PACKAGE_NAME}_LLVM_FILEPATH "${llvm.profile.file}"
+    CACHE STRING "Default LLVM coverage filepath")
+  set(IXM_${CMAKE_FIND_PACKAGE_NAME}_LLVM_REUSE_PGO NO
+    CACHE BOOL "The coverage file will be used for Profile Guided Optimization")
+
+  set(IXM_${CMAKE_FIND_PACKAGE_NAME}_GNU_ABSOLUTE_PATHS NO
+    CACHE BOOL "Create absolute paths in the .gcno files")
+  set(IXM_${CMAKE_FIND_PACKAGE_NAME}_GNU_CONDITIONS NO
+    CACHE BOOL "Whether to instrument program conditions (GCC Only)")
+
+  mark_as_advanced(
+    IXM_${CMAKE_FIND_PACKAGE_NAME}_LLVM_PROFILE_FILE
+    IXM_${CMAKE_FIND_PACKAGE_NAME}_LLVM_COVERAGE_PREFIX_MAP
+
+    IXM_${CMAKE_FIND_PACKAGE_NAME}_GNU_ABSOLUTE_PATHS
+    IXM_${CMAKE_FIND_PACKAGE_NAME}_GNU_CONDITIONS
+  )
+
+
+  set(🈯::${CMAKE_FIND_PACKAGE_NAME}::CACHE YES CACHE INTERNAL "")
+endblock()
+
+# Setting default values
+set(IXM_LLVM_COVERAGE_PREFIX_MAP "$<TARGET_PROPERTY:SOURCE_DIR>=."
+  CACHE STRING "Default LLVM Coverage prefix map path")
+set(IXM_${CMAKE_FIND_PACKAGE_NAME}_LLVM_PROFILE_FILENAME
+  "$<PATH:APPEND,$<TARGET_PROPERTY:BINARY_DIR>,$<CONFIG>,$<TARGET_PROPERTY:NAME>.profraw>"
+  CACHE STRING "Default LLVM Coverage profile filename")
+set(IXM_${CMAKE_FIND_PACKAGE_NAME}_GNU_ABSOLUTE_PATHS NO
+  CACHE BOOL "Pass `-fprofile-abs-path` in for gcov build targets")
+
+mark_as_advanced(
+  IXM_${CMAKE_FIND_PACKAGE_NAME}_LLVM_COVERAGE_PREFIX_MAP
+  IXM_${CMAKE_FIND_PACKAGE_NAME}_GNU_ABSOLUTE_PATHS
+)
+
+#[[
 define_property(TARGET
-  PROPERTY GNU_ABSOLUTE_PATHS INHERITED
-  BRIEF_DOCS "Create absolute paths in the .gcno files")
+  PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_GNU_ABSOLUTE_PATHS INHERITED
+  BRIEF_DOCS "Create absolute paths in the .gcno files"
+  INITIALIZE_FROM_VARIABLE
+    IXM_${CMAKE_FIND_PACKAGE_NAME}_GNU_ABSOLUTE_PATHS)
 
 define_property(TARGET
   PROPERTY
@@ -161,88 +229,174 @@ define_property(TARGET
     LLVM_PROFILE_FILENAME
   BRIEF_DOCS
     "Equal to setting LLVM_PROFILE_FILE environment variable when adding a test")
+]]
+define_property(TARGET
+  PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_LLVM_INSTRUMENTED_EXECUTABLES
+  BRIEF_DOCS "Executables that generate LLVM Profile Instrumentation Data")
 
-#[[Add a coverage target (to generate and then merge all code coverage data]]
-function (add_coverage name)
-  cmake_language(CALL ixm::unimplemented)
-  cmake_parse_arguments(ARG "LLVM;GNU" "" "" ${ARGN})
+define_property(TARGET
+  PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_LLVM_INSTRUMENTED_SOURCES
+  BRIEF_DOCS "todo")
+
+define_property(TARGET
+  PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_LLVM_INSTRUMENTED_FILENAME
+  BRIEF_DOCS "Path to the LLVM .profraw file"
+  INITIALIZE_FROM_VARIABLE
+    IXM_${CMAKE_FIND_PACKAGE_NAME}_LLVM_INSTRUMENTED_FILENAME)
+
+define_property(TARGET
+  PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_LLVM_MERGE_FAILURE_MODE
+  BRIEF_DOCS "todo")
+
+define_property(TARGET
+  PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_LLVM_MERGE_REUSE_PGO
+  BRIEF_DOCS "todo")
+
+define_property(TARGET
+  PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_LLVM_MERGE_PROFILES
+  BRIEF_DOCS "")
+
+define_property(TARGET
+  PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_LLVM_MERGE_OPTIONS
+  BRIEF_DOCS "")
+
+define_property(TARGET
+  PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_LLVM_EXPORT_IGNORE_FILENAME_REGEX
+  BRIEF_DOCS "")
+
+block (SCOPE_FOR VARIABLES)
+  set(IXM_${CMAKE_FIND_PACKAGE_NAME}_LLVM_INSTRUMENTED_FILENAME
+    $<PATH:APPEND,$<TARGET_PROPERTY:BINARY_DIR>,$<CONFIG>,$<TARGET_PROPERTY:NAME>.profraw>
+    CACHE STRING "Default path for the LLVM .profraw file")
+endblock()
+
+#[============================================================================[
+# @param {option} LLVM - Set the coverage target type to use source-based code
+# coverage
+# @param {option} GNU - Set the coverage target type to use gcov.
+#]============================================================================]
+function (add_coverage_target name)
+  #cmake_language(CALL ixm::unimplemented)
+  cmake_parse_arguments(ARG "LLVM;GNU" "OUTPUT;FORMAT" "" ${ARGN})
   if (ARG_LLVM AND ARG_GNU)
-    message(FATAL_ERROR "Coverage targets may only have of: LLVM, GNU")
+    message(FATAL_ERROR "Coverage targets may only have one of type: LLVM, GNU")
+  endif()
+
+  if (ARG_LLVM)
+    # TODO: Use cmake_path to ensure there is a "well known" file extension based on FORMAT
+    cmake_language(CALL 🈯::ixm::default ARG_FORMAT lcov)
+    string(CONCAT llvm.output $<PATH:APPEND,
+      ${CMAKE_CURRENT_BINARY_DIR},
+      $<CONFIG>,
+      ${name}.${ARG_FORMAT}
+    >)
+    cmake_language(CALL 🈯::ixm::default ARG_OUTPUT "${llvm.output}")
+  endif()
+
+  add_custom_target(${name}
+    DEPENDS
+      "${ARG_OUTPUT}"
+      $<GENEX_EVAL:$<TARGET_PROPERTY:${name},COVERAGE_DEPENDENCIES>>)
+
+  set_target_properties(${name}
+    PROPERTIES
+      COVERAGE_IMPLEMENTATION $<IF:$<BOOL:${ARG_LLVM}>,LLVM,GNU>
+  )
+
+  if (ARG_LLVM)
+    string(CONCAT profile.data $<PATH:APPEND,
+      ${CMAKE_CURRENT_BINARY_DIR},
+      $<CONFIG>,
+      $<PATH:REPLACE_EXTENSION,${name},profdata>
+    >)
+
+    set(common.arguments PACKAGE Coverage TARGET ${name})
+    cmake_language(CALL 🈯::ixm::property::get LLVM_INSTRUMENTED_EXECUTABLES ${common.arguments})
+    cmake_language(CALL 🈯::ixm::property::get LLVM_INSTRUMENTED_SOURCES ${common.arguments})
+
+    cmake_language(CALL 🈯::ixm::property::get LLVM_MERGE_FAILURE_MODE ${common.arguments})
+    # TODO: Consider renaming this one to just `LLVM_MERGE_SPARSE`, default it to YES
+    cmake_language(CALL 🈯::ixm::property::get LLVM_MERGE_REUSE_PGO ${common.arguments})
+    cmake_language(CALL 🈯::ixm::property::get LLVM_MERGE_PROFILES ${common.arguments})
+    cmake_language(CALL 🈯::ixm::property::get LLVM_MERGE_OPTIONS ${common.arguments})
+
+    cmake_language(CALL 🈯::ixm::property::get LLVM_EXPORT_IGNORE_FILENAME_REGEX
+      OUTPUT_VARIABLE ignore.regex ${common.arguments})
+
+    add_custom_command(OUTPUT "${profile.data}"
+      COMMAND Coverage::LLVM::ProfileData merge
+        $<$<NOT:$<BOOL:${LLVM_MERGE_REUSE_PGO}>>:--sparse>
+        --instr
+        $<$<BOOL:${LLVM_MERGE_FAILURE_MODE}>:--failure-mode=${LLVM_MERGE_FAILURE_MODE}>
+        --output=${profile.data}
+        ${LLVM_MERGE_OPTIONS}
+        ${LLVM_MERGE_PROFILES}
+      DEPENDS
+        $<TARGET_NAME_IF_EXISTS:test>
+        ${LLVM_INSTRUMENTED_EXECUTABLES}
+        ${LLVM_MERGE_PROFILES}
+      COMMENT "Merging profiling data to ${profile.data}"
+      COMMAND_EXPAND_LISTS
+      VERBATIM)
+
+    cmake_language(CALL 🈯::ixm::property::get IMPORTED_LOCATION
+      TARGET $<TARGET_NAME_IF_EXISTS:Coverage::LLVM::C++Filter>
+      OUTPUT_VARIABLE demangler)
+
+    # TODO: Make the `cmake_pch` itself a property of "banned" files
+    # e.g., we could just reuse the IGNORE_FILENAME_REGEX property :)
+    set(sources $<LIST:FILTER,${LLVM_INSTRUMENTED_SOURCES},EXCLUDE,cmake_pch>)
+
+    # It is beyond unfortunate that no one on the LLVM team ever thought "what
+    # if someone is writing this to a file and doesn't want to rely on the
+    # shell?" but LLVM rarely makes the right choice. We all just put up with
+    # it. :(
+    add_custom_command(OUTPUT "${ARG_OUTPUT}"
+      COMMAND Coverage::LLVM::Tool export
+        --format=${ARG_FORMAT}
+        --instr-profile=${profile.data}
+        $<$<BOOL:$<TARGET_NAME_IF_EXISTS:Coverage::LLVM::C++Filter>>:-Xdemangler=${demangler}>
+        "$<$<BOOL:${ignore.regex}>:--ignore-filename-regex=($<JOIN:${ignore.regex},|>)>"
+        $<JOIN:${LLVM_INSTRUMENTED_EXECUTABLES},$<SEMICOLON>--object$<SEMICOLON>>
+        --sources $<JOIN:${sources},$<SEMICOLON>--sources$<SEMICOLON>>
+      > "${ARG_OUTPUT}"
+      DEPENDS
+        ${profile.data}
+      COMMENT "Exporting coverage information to ${ARG_OUTPUT}"
+      COMMAND_EXPAND_LISTS
+      USES_TERMINAL
+      VERBATIM)
+    set_property(TARGET ${name} APPEND
+      PROPERTY Coverage_LLVM_EXPORT_IGNORE_FILENAME_REGEX
+        $<PATH:RELATIVE_PATH,${FETCHCONTENT_BASE_DIR},${CMAKE_BINARY_DIR}>)
+    set_property(TARGET ${name} APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${ARG_OUTPUT}")
   endif()
 endfunction()
 
-#[[
-Adds all the steps necessary to generate gcov data files.
-#]]
-function (add_gnu_coverage name)
-  cmake_language(CALL ixm::unimplemented)
-endfunction()
+function (target_coverage name)
+  cmake_parse_arguments(ARG "" "" "PRIVATE;PUBLIC;INTERFACE" ${ARGN})
+  get_property(implementation TARGET ${name} PROPERTY COVERAGE_IMPLEMENTATION)
 
-#[============================================================================[
-Creates all the steps necessary to generate an lcov or json coverage report
-file
-]============================================================================]
-function (add_llvm_coverage name)
-  cmake_parse_arguments(ARG "ALL" "EXPORT;OUTPUT;FORMAT;GITHUB" "TARGETS;IGNORE_FILENAME_REGEX" ${ARGN})
-  cmake_language(CALL 🈯::ixm::default ARG_EXPORT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${name}.lcov.info")
-  cmake_language(CALL 🈯::ixm::default ARG_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${name}.profdata")
-  cmake_language(CALL 🈯::ixm::default ARG_FORMAT lcov)
-  # Can't really remember why there's a ARG_GITHUB. Probably for
-  # uploading/writing to a step summary automatically?
-  # Might be as a "step" output, so it can be copied or uploaded to something
-  # like codecov.io
-  cmake_language(CALL 🈯::ixm::default ARG_GITHUB "${name}")
-  set(ignore.filename.regex $<GENEX_EVAL:$<TARGET_PROPERTY:${name},LLVM_IGNORE_FILENAME_REGEX>>)
-  set(test.executables $<GENEX_EVAL:$<TARGET_PROPERTY:${name},LLVM_TEST_EXECUTABLES>>)
-  set(profraw.sources $<GENEX_EVAL:$<TARGET_PROPERTY:${name},LLVM_PROFRAW_SOURCES>>)
-  set(failure.mode $<GENEX_EVAL:$<TARGET_PROPERTY:${name},LLVM_MERGE_FAILURE_MODE>>)
-  set(sources $<GENEX_EVAL:$<TARGET_PROPERTY:${name},LLVM_SOURCES>>)
-  # llvm-undname is broken, so we can *only* care about llvm-cxxfilter 😔
-  set(demangler-name $<TARGET_NAME_IF_EXISTS:Coverage::LLVM::C++Filter>)
-  string(CONCAT demangler $<
-    $<BOOL:${demangler-name}>:
-    $<TARGET_PROPERTY:${demangler-name},IMPORTED_LOCATION>
-  >)
-  add_custom_target(${name}
-    DEPENDS
-      ${ARG_EXPORT})
-  add_custom_command(OUTPUT "${ARG_OUTPUT}"
-    COMMAND Coverage::LLVM::ProfileData merge
-      --sparse
-      --instr
-      --failure-mode=$<IF:$<BOOL:${failure.mode}>,${failure.mode},any>
-      --output=${ARG_OUTPUT}
-      ${profraw.sources}
-    DEPENDS
-      ${test.executables}
-      ${profraw.sources}
-      $<TARGET_NAME_IF_EXISTS:test>
-    COMMENT "Merging raw profiling data"
-    COMMAND_EXPAND_LISTS
-    VERBATIM)
-  # Unfortunate that we need a shell command (and require the `>` pipe
-  # direction operator), but I've grown accustomed to LLVM tooling never doing
-  # the right thing when you need it to.
-  add_custom_command(OUTPUT ${ARG_EXPORT}
-    DEPENDS ${ARG_OUTPUT}
-    COMMAND Coverage::LLVM::Tool export
-      --format=${ARG_FORMAT}
-      --instr-profile=${ARG_OUTPUT}
-      $<$<BOOL:${demangler-name}>:-Xdemangler=${demangler}>
-      "$<$<BOOL:${ignore.filename.regex}>:--ignore-filename-regex=($<JOIN:${ignore.filename.regex},|>)>"
-      $<JOIN:${test.executables},$<SEMICOLON>--object$<SEMICOLON>>
-      --sources $<JOIN:${sources},$<SEMICOLON>--sources$<SEMICOLON>>
-    > "${ARG_EXPORT}"
-    COMMENT "Exporting coverage information to ${ARG_EXPORT}"
-    COMMAND_EXPAND_LISTS
-    USES_TERMINAL
-    VERBATIM)
-  foreach (target IN LISTS ARG_TARGETS)
+  foreach (target IN LISTS ARG_PRIVATE ARG_PUBLIC)
+    set(is.executable $<STREQUAL:$<TARGET_PROPERTY:${target},TYPE>,EXECUTABLE>)
+    cmake_language(CALL 🈯::ixm::property::get LLVM_INSTRUMENTED_FILENAME
+      PACKAGE Coverage
+      TARGET ${target}
+      CONTEXT)
+    set(properties INSTRUMENTED_SOURCES INSTRUMENTED_EXECUTABLES MERGE_PROFILES)
+    set(values $<TARGET_PROPERTY:${target},SOURCES>
+      $<${is.executable}:$<TARGET_FILE:${target}>>
+      $<${is.executable}:${LLVM_INSTRUMENTED_FILENAME}>)
+    foreach (property value IN ZIP_LISTS properties values)
+      set_property(TARGET ${name} APPEND
+        PROPERTY
+          Coverage_LLVM_${property} ${value})
+    endforeach()
     set_property(TARGET ${name} APPEND
       PROPERTY
-        LLVM_SOURCES $<TARGET_PROPERTY:${target},SOURCES>)
+        ADDITIONAL_CLEAN_FILES $<${is.executable}:${LLVM_INSTRUMENTED_FILENAME}>)
+    target_link_libraries(${target}
+      PRIVATE
+        Coverage::${implementation})
   endforeach()
-  set_property(TARGET ${name} APPEND
-    PROPERTY
-      LLVM_IGNORE_FILENAME_REGEX ${ARG_IGNORE_FILENAME_REGEX})
 endfunction()
