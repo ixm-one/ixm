@@ -59,17 +59,17 @@ function (🈯::ixm::experiment name uuid)
 endfunction()
 
 #[[ Used to create a generator expression for getting a property ]]
-function (🈯::ixm::property::get property)
-  cmake_parse_arguments(ARG "CONTEXT" "PACKAGE;TARGET;OUTPUT_VARIABLE" "" ${ARGN})
+function (ixm::target::property property)
+  cmake_parse_arguments(ARG "CONTEXT" "TARGET;OUTPUT_VARIABLE" "PREFIX" ${ARGN})
   cmake_language(CALL 🈯::ixm::default ARG_OUTPUT_VARIABLE ${property})
-  set(target "${ARG_TARGET},")
+  string(JOIN _ property ${ARG_PREFIX} ${property})
+
   set(eval GENEX_EVAL:)
-
-  if (ARG_PACKAGE)
-    set(property ${ARG_PACKAGE}_${property})
+  set(target)
+  if (ARG_TARGET)
+    set(target "${ARG_TARGET},")
   endif()
-
-  if (ARG_CONTEXT AND ARG_TARGET)
+  if (ARG_TARGET AND ARG_CONTEXT)
     set(eval TARGET_GENEX_EVAL:${target})
   endif()
 
@@ -87,4 +87,9 @@ macro(🈯::ixm::requires name)
   if (NOT ARG_${name})
     message(FATAL_ERROR "function '${CMAKE_CURRENT_FUNCTION}' requires a '${name}' argument")
   endif()
+endmacro()
+
+# Friendly wrapper :>
+macro(ixm_target_property)
+  cmake_language(CALL ixm::target::property ${ARGN})
 endmacro()
