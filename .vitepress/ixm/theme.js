@@ -55,13 +55,14 @@ class Palette {
 
   static light = {
     foreground: "#25292e",
+    code: "#f5f7f9",
 
     blue: ["#0f8fff", "#368cf9"],
     coral: ["#f25f3a", "#d43511"],
     red: ["#d5232c", "#df0c24"],
 
     cyan: "#00d0fa",
-    green: "#54d961",
+    green: "#3ca048",
     grey: "#818b98",
     indigo: "#7a82f0",
     lemon: "#d8bd0e",
@@ -80,6 +81,7 @@ class Light {
   type = "light";
   colors = {
     "editor.foreground": Palette.light.foreground,
+    "editor.background": Palette.light.code,
   };
   tokenColors = [
     new Token({ scopes: Scopes.COMMENT, color: Palette.light.grey }),
