@@ -76,12 +76,23 @@ function (ixm::target::property property)
   set(${ARG_OUTPUT_VARIABLE} $<${eval}$<TARGET_PROPERTY:${target}${property}>> PARENT_SCOPE)
 endfunction()
 
-#[[Used to set missing arguments to a well known default]]
-macro(🈯::ixm::default var default)
-  if (NOT ${var})
-    set(${var} ${default})
+function (🈯::ixm::requires::choice name)
+  if (NOT ARG_${name} IN_LIST ARGN)
+    list(JOIN valid ", " valid)
+    message(FATAL_ERROR "Argument '${name}' must be one of the following: ${valid}")
   endif()
-endmacro()
+endfunction()
+
+#[[Used to set missing arguments to a well known default]]
+function (🈯::ixm::default var)
+  cmake_parse_arguments("" "$*" "" "" ${ARGN})
+  if (NOT ${var} AND NOT _$*)
+    set(${var} ${ARGN})
+  elseif (NOT ${var} AND _$*)
+    string(CONCAT ${var} ${_UNPARSED_ARGUMENTS})
+  endif()
+  return(PROPAGATE ${var})
+endfunction()
 
 macro(🈯::ixm::requires name)
   if (NOT ARG_${name})
