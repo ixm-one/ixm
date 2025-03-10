@@ -1,5 +1,5 @@
 cmake_language(CALL ixm::find::program
-  NAMES gcov-tool
+  NAMES gcovr
   PACKAGE
     COMPONENT GNU
     TARGET Merge)
@@ -26,12 +26,6 @@ cmake_language(CALL ixm::find::program
     TARGET Merge)
 
 cmake_language(CALL ixm::find::program
-  NAMES lcov
-  PACKAGE
-    COMPONENT Report
-    TARGET LTP
-    OPTIONAL)
-cmake_language(CALL ixm::find::program
   NAMES gcovr
   PACKAGE
     COMPONENT Report
@@ -54,14 +48,14 @@ block (SCOPE_FOR VARIABLES PROPAGATE Coverage_Report_DEFAULT)
       set(Coverage_Report_DEFAULT Coverage::Report::${reporter})
     endif()
   endforeach()
-  set_property(GLOBAL APPEND PROPERTY Coverage::Report::variables Coverage_Report_DEFAULT)
+  set_property(GLOBAL APPEND
+    PROPERTY Coverage::Report::variables Coverage_Report_DEFAULT)
 endblock()
-
 
 block (SCOPE_FOR VARIABLES PROPAGATE Coverage_GNU_FLAG)
   set(Coverage_GNU_FLAG "--coverage")
   set(target Coverage::GNU)
-  set(prefix ${target}:{${target}})
+  set(prefix ${target}::{${target}})
   set_property(GLOBAL APPEND PROPERTY ${target}::targets ${target})
   set_property(GLOBAL APPEND PROPERTY ${target}::variables Coverage_GNU_FLAG)
   foreach (language IN ITEMS OBJCXX OBJC CXX C)
@@ -75,7 +69,34 @@ block (SCOPE_FOR VARIABLES PROPAGATE Coverage_GNU_FLAG)
       $<${abs.path}:-fprofile-abs-path>)
     set_property(GLOBAL APPEND PROPERTY ${prefix}::options::link
       $<$<LINK_LANG_AND_ID:${language},AppleClang,Clang,GNU>:--coverage>)
+    if (DEFINED CMAKE_${language}_COMPILER_ID)
+      list(APPEND compilers ${CMAKE_${language}_COMPILER_ID})
+    endif()
   endforeach()
+
+  # We need to do some sanity checking to select the correct target
+  # and then to create the Generate IMPORTED target.
+  # There are compiler/linker limitations, so we need to ensure things "just
+  # work" for these use cases.
+  list(REMOVE_DUPLICATES compilers)
+  list(LENGTH compilers count)
+  set(generate gcov)
+  if (compilers MATCHES "Clang")
+    set(generate llvm-cov)
+  endif()
+  set(generate gcov)
+  if (NOT count EQUAL 1)
+    message(WARNING "To use GNU Code Coverage, all C, C++, ObjC, and ObjC++ compilers *must* match")
+    unset(Coverage_GNU_FLAG)
+    set(generate "Coverage_GNU_Generate_EXECUTABLE-NOTFOUND")
+  elseif (compilers MATCHES "Clang")
+    set(generate llvm-cov)
+  endif()
+  cmake_language(CALL ixm::find::program
+    NAMES ${generate}
+    PACKAGE
+      COMPONENT GNU
+      TARGET Generate)
 endblock()
 
 block (SCOPE_FOR VARIABLES PROPAGATE Coverage_LLVM_COMPILE_FLAG Coverage_LLVM_LINK_FLAG)
@@ -120,31 +141,6 @@ cmake_language(CALL ixm::package::check)
 cmake_language(CALL ixm::package::properties
   DESCRIPTION "Code Coverage Support")
 
-# Post-search clean up
-foreach (reporter IN ITEMS GCovR LLVM LTP)
-  if (TARGET Coverage::Report::${reporter})
-    string(CONCAT script.path $<PATH:APPEND
-      ${IXM_ROOT_DIR},
-      templates,
-      coverage,
-      report,
-      $<LOWER_CASE:$<TARGET_PROPERTY:${reporter},NAME>>.cmake.in
-    >)
-    set_property(TARGET Coverage::Report::${reporter}
-      PROPERTY
-        COVERAGE_REPORT_SCRIPT_TEMPLATE "${script.path}")
-  endif()
-endforeach()
-
-
-#[[
-define_property(TARGET
-  PROPERTY ${CMAKE_FIND_PACKAGE_NAME}_GNU_ABSOLUTE_PATHS INHERITED
-  BRIEF_DOCS "Create absolute paths in the .gcno files"
-  INITIALIZE_FROM_VARIABLE
-    IXM_${CMAKE_FIND_PACKAGE_NAME}_GNU_ABSOLUTE_PATHS)
-
-]]
 define_property(TARGET PROPERTY COVERAGE_IMPLEMENTATION)
 
 define_property(TARGET PROPERTY COVERAGE_REPORT_SCRIPT_PATH)
@@ -190,12 +186,13 @@ function (add_coverage_target name)
   cmake_parse_arguments(ARG "LLVM;GNU" "FORMAT" "" ${ARGN})
   cmake_language(CALL 🈯::ixm::coverage::type "targets")
 
-
   cmake_language(CALL 🈯::ixm::coverage::target ${name})
 
+  set(type gnu)
   if (ARG_LLVM)
-    cmake_language(CALL 🈯::ixm::coverage::llvm::merge ${name})
+    set(type llvm)
   endif()
+  cmake_language(CALL 🈯::ixm::coverage::${type}::merge ${name})
 endfunction()
 
 #[============================================================================[
@@ -206,14 +203,19 @@ function (add_coverage_report name)
   cmake_parse_arguments(ARG "LLVM;GNU" "OUTPUT;FORMAT" "" ${ARGN})
   cmake_language(CALL 🈯::ixm::coverage::type "reports")
 
+
   if (ARG_LLVM)
-    cmake_language(CALL 🈯::ixm::default ARG_FORMAT JSON)
+    cmake_language(CALL 🈯::ixm::default ARG_FORMAT LCOV)
     cmake_language(CALL 🈯::ixm::requires::choice FORMAT LCOV JSON)
     cmake_language(CALL 🈯::ixm::default ARG_OUTPUT $* $<PATH:APPEND,
       ${CMAKE_CURRENT_BINARY_DIR},
       $<CONFIG>,
       ${name}.$<LOWER_CASE:${ARG_FORMAT}>
     >)
+  else()
+    cmake_language(CALL 🈯::ixm::default ARG_FORMAT JSON)
+    cmake_language(CALL 🈯::ixm::requires::choice FORMAT
+      JSON HTML CSV LCOV Clover Cobertura Coveralls SonarQube JaCoCo)
   endif()
 
   cmake_language(CALL 🈯::ixm::coverage::target ${name})
@@ -221,6 +223,8 @@ function (add_coverage_report name)
   if (ARG_LLVM)
     cmake_language(CALL 🈯::ixm::coverage::llvm::merge ${name})
     cmake_language(CALL 🈯::ixm::coverage::llvm::export ${name})
+  else()
+    cmake_language(CALL 🈯::ixm::coverage::gnu::merge ${name})
   endif()
 endfunction()
 
@@ -235,7 +239,10 @@ function (target_coverage name)
         $<TARGET_PROPERTY:${target},TYPE>,
         $<LIST:APPEND,EXECUTABLE,UTILITY>
       >)
-      ixm_target_property(LLVM_INSTRUMENTED_FILENAME PREFIX COVERAGE TARGET ${target} CONTEXT)
+      ixm_target_property(LLVM_INSTRUMENTED_FILENAME
+        PREFIX COVERAGE
+        TARGET ${target}
+        CONTEXT)
       set(instrumented $<${is.executable}:${LLVM_INSTRUMENTED_FILENAME}>)
       set(merged $<${is.mergeable}:${LLVM_INSTRUMENTED_FILENAME}>)
       set_property(TARGET ${name} APPEND

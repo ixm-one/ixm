@@ -210,14 +210,11 @@ function (ixm::package::target)
   target_compile_options(${target} INTERFACE ${compile})
   target_link_options(${target} INTERFACE ${link})
 
-  # INTERFACE libraries don't like having non INTERFACE properties set, after
-  # all.
   if (location)
     set_target_properties(${target}
       PROPERTIES
         IMPORTED_LOCATION "${location}"
-        VERSION "${version}"
-    )
+        VERSION "${version}")
   endif()
 endfunction()
 
@@ -234,7 +231,7 @@ macro(🈯::ixm::package::component)
   set(package ${CMAKE_FIND_PACKAGE_NAME}_${component})
   # TODO: Replace find_package_handle_standard_args in the future so this is
   # easier to work with, instead of technically being a hack.
-  set(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY YES)
+  set(${CMAKE_FIND_PACKAGE_NAME}_${component}_FIND_QUIETLY YES)
   find_package_handle_standard_args(${package} REQUIRED_VARS ${variables})
   set(${package}_FOUND ${${package_FOUND}} PARENT_SCOPE)
 endmacro()

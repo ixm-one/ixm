@@ -57,7 +57,6 @@ function (🈯::ixm::coverage::target name)
 endfunction()
 
 function (🈯::ixm::coverage::llvm::merge name)
-  set(timestamp.byproducts $<PATH:APPEND,${CMAKE_CURRENT_BINARY_DIR},$<CONFIG>,${name}-byproducts.timestamp>)
   set(profile.data $<PATH:APPEND,${CMAKE_CURRENT_BINARY_DIR},$<CONFIG>,${name}.profdata>)
 
   ixm_target_property(LLVM_INSTRUMENTED_EXECUTABLES TARGET ${name} PREFIX COVERAGE)
@@ -97,10 +96,12 @@ function (🈯::ixm::coverage::llvm::merge name)
       COVERAGE_LLVM_INSTRUMENTED_SOURCES)
 endfunction()
 
+function (🈯::ixm::coverage::gnu::merge name)
+
+endfunction()
+
 function (🈯::ixm::coverage::llvm::export name)
   ixm_target_property(LLVM_INSTRUMENTED_FILENAME TARGET ${name} PREFIX COVERAGE)
-  ixm_target_property(REPORT_SCRIPT_PATH TARGET ${name} PREFIX COVERAGE)
-
   ixm_target_property(LLVM_INSTRUMENTED_EXECUTABLES PREFIX COVERAGE)
   ixm_target_property(LLVM_INSTRUMENTED_SOURCES PREFIX COVERAGE)
 
