@@ -85,18 +85,27 @@ block (SCOPE_FOR VARIABLES PROPAGATE Coverage_GNU_FLAG)
     set(generate llvm-cov)
   endif()
   set(generate gcov)
-  if (NOT count EQUAL 1)
-    message(WARNING "To use GNU Code Coverage, all C, C++, ObjC, and ObjC++ compilers *must* match")
-    unset(Coverage_GNU_FLAG)
-    set(generate "Coverage_GNU_Generate_EXECUTABLE-NOTFOUND")
-  elseif (compilers MATCHES "Clang")
+  if (compilers MATCHES "Clang")
     set(generate llvm-cov)
   endif()
-  cmake_language(CALL ixm::find::program
-    NAMES ${generate}
-    PACKAGE
-      COMPONENT GNU
-      TARGET Generate)
+  if (count EQUAL 1)
+    cmake_language(CALL ixm::find::program
+      NAMES ${generate}
+      PACKAGE
+        COMPONENT GNU
+        TARGET Generate)
+  elseif (compilers MATCHES "Clang")
+    message(WARNING "To use GNU Code Coverage, all C, C++, ObjC, and ObjC++ compilers *must* match")
+    # We hook into the machinery to tell `ixm::package::check` that GNU::Generate was never found
+    set_property(GLOBAL APPEND
+      PROPERTY
+        ${target}::targets Coverage::GNU::Generate)
+    set_property(GLOBAL APPEND
+      PROPERTY
+        ${target}::variables Coverage_GNU_Generate_EXECUTABLE)
+    set(Coverage_GNU_Generate_EXECUTABLE "Coverage_GNU_Generate_EXECUTABLE-NOTFOUND"
+      CACHE FILEPATH "")
+  endif()
 endblock()
 
 block (SCOPE_FOR VARIABLES PROPAGATE Coverage_LLVM_COMPILE_FLAG Coverage_LLVM_LINK_FLAG)
