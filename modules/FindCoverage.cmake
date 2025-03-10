@@ -86,7 +86,15 @@ block (SCOPE_FOR VARIABLES PROPAGATE Coverage_GNU_FLAG)
   endif()
   set(generate gcov)
   if (compilers MATCHES "Clang")
-    set(generate llvm-cov)
+    # We need to check the version of the compiler at the very least for
+    # consistency
+    foreach (language IN ITEMS OBJCXX OBJC CXX C)
+      if (CMAKE_${language}_COMPILER_VERSION)
+        string(REPLACE "." ";" version "${CMAKE_${language}_COMPILER_VERSION}")
+        list(POP_FRONT version major)
+      endif()
+    endforeach()
+    set(generate llvm-cov-${major} llvm-cov)
   endif()
   if (count EQUAL 1)
     cmake_language(CALL ixm::find::program
@@ -150,40 +158,6 @@ cmake_language(CALL ixm::package::check)
 cmake_language(CALL ixm::package::properties
   DESCRIPTION "Code Coverage Support")
 
-define_property(TARGET PROPERTY COVERAGE_IMPLEMENTATION)
-
-define_property(TARGET PROPERTY COVERAGE_REPORT_SCRIPT_PATH)
-define_property(TARGET PROPERTY COVERAGE_REPORT_SCRIPT_ECHO)
-define_property(TARGET PROPERTY COVERAGE_REPORT_LOCATION)
-define_property(TARGET PROPERTY COVERAGE_REPORT_FORMAT)
-
-define_property(TARGET PROPERTY COVERAGE_LLVM_INSTRUMENTED_EXECUTABLES)
-define_property(TARGET PROPERTY COVERAGE_LLVM_INSTRUMENTED_SOURCES)
-
-define_property(TARGET
-  PROPERTY COVERAGE_LLVM_INSTRUMENTED_FILENAME
-  INITIALIZE_FROM_VARIABLE IXM_COVERAGE_LLVM_INSTRUMENTED_FILENAME)
-
-define_property(TARGET
-  PROPERTY COVERAGE_LLVM_COVERAGE_PREFIX_MAP
-  INITIALIZE_FROM_VARIABLE IXM_COVERAGE_LLVM_COVERAGE_PREFIX_MAP)
-
-define_property(TARGET PROPERTY COVERAGE_LLVM_MCDC)
-
-define_property(TARGET PROPERTY COVERAGE_LLVM_MERGE_FAILURE_MODE)
-define_property(TARGET PROPERTY COVERAGE_LLVM_MERGE_PROFILES)
-define_property(TARGET PROPERTY COVERAGE_LLVM_MERGE_OPTIONS)
-define_property(TARGET PROPERTY COVERAGE_LLVM_MERGE_SPARSE
-  INITIALIZE_FROM_VARIABLE IXM_COVERAGE_LLVM_MERGE_SPARSE)
-
-define_property(TARGET PROPERTY COVERAGE_LLVM_EXPORT_IGNORE_FILENAME_REGEX
-  INITIALIZE_FROM_VARIABLE IXM_COVERAGE_LLVM_EXPORT_IGNORE_FILENAME_REGEX)
-
-define_property(TARGET PROPERTY COVERAGE_GNU_ABSOLUTE_PATHS
-  INITIALIZE_FROM_VARIABLE IXM_COVERAGE_GNU_ABSOLUTE_PATHS)
-define_property(TARGET PROPERTY COVERAGE_GNU_CONDITIONS
-  INITIALIZE_FROM_VARIABLE IXM_COVERAGE_GNU_CONDITIONS)
-
 #[============================================================================[
 # @param {option} LLVM - Set the coverage target type to use source-based code
 # coverage
@@ -222,7 +196,7 @@ function (add_coverage_report name)
       ${name}.$<LOWER_CASE:${ARG_FORMAT}>
     >)
   else()
-    cmake_language(CALL 🈯::ixm::default ARG_FORMAT JSON)
+    cmake_language(CALL 🈯::ixm::default ARG_FORMAT LCOV)
     cmake_language(CALL 🈯::ixm::requires::choice FORMAT
       JSON HTML CSV LCOV Clover Cobertura Coveralls SonarQube JaCoCo)
   endif()
@@ -231,7 +205,7 @@ function (add_coverage_report name)
 
   if (ARG_LLVM)
     cmake_language(CALL 🈯::ixm::coverage::llvm::merge ${name})
-    cmake_language(CALL 🈯::ixm::coverage::llvm::export ${name})
+    cmake_language(CALL 🈯::ixm::coverage::llvm::report ${name})
   else()
     cmake_language(CALL 🈯::ixm::coverage::gnu::merge ${name})
   endif()
