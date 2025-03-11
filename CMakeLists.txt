@@ -26,7 +26,7 @@ endblock()
 block (SCOPE_FOR VARIABLES) # Setting default CMake policies
   message(TRACE "Setting default CMake policies")
   if (NOT 🈯::ixm::${CMAKE_VERSION}::policies)
-    include("${CMAKE_CURRENT_LIST_DIR}/internal/policies.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/runtime/policies.cmake")
     set(🈯::ixm::${CMAKE_VERSION}::policies YES CACHE INTERNAL "")
     mark_as_advanced(🈯::ixm::${CMAKE_VERSION}::policies)
   endif()
@@ -44,7 +44,7 @@ endblock()
 
 block (SCOPE_FOR VARIABLES) # Include internal source files
   message(TRACE "Including IXM's internal source files")
-  include("${CMAKE_CURRENT_LIST_DIR}/internal/supports.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/runtime/supports.cmake")
 endblock()
 
 block (SCOPE_FOR VARIABLES) # Setting internal properties
@@ -60,12 +60,12 @@ block (SCOPE_FOR VARIABLES) # Setting internal properties
 endblock()
 
 message(TRACE "Including IXM internal source files")
-include("${CMAKE_CURRENT_LIST_DIR}/internal/validate.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/internal/features.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/internal/package.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/internal/common.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/internal/check.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/internal/find.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/runtime/validate.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/runtime/features.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/runtime/package.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/runtime/common.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/runtime/check.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/runtime/find.cmake")
 
 file(MAKE_DIRECTORY "${IXM_FILES_DIR}")
 
