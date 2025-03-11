@@ -27,7 +27,7 @@ endblock()
 block (SCOPE_FOR VARIABLES) # Setting default CMake policies
   message(TRACE "Setting default CMake policies")
   if (NOT 🈯::ixm::${CMAKE_VERSION}::policies)
-    include("${CMAKE_CURRENT_LIST_DIR}/internal/policies.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/runtime/policies.cmake")
     set(🈯::ixm::${CMAKE_VERSION}::policies YES CACHE INTERNAL "")
     mark_as_advanced(🈯::ixm::${CMAKE_VERSION}::policies)
   endif()

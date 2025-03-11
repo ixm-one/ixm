@@ -58,7 +58,6 @@ function (🈯::ixm::experiment name uuid)
   endif()
 endfunction()
 
-#[[ Used to create a generator expression for getting a property ]]
 function (ixm::target::property property)
   cmake_parse_arguments(ARG "CONTEXT" "TARGET;OUTPUT_VARIABLE" "PREFIX" ${ARGN})
   cmake_language(CALL 🈯::ixm::default ARG_OUTPUT_VARIABLE ${property})
