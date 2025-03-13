@@ -7,7 +7,7 @@ include(CMakePrintHelpers)
 
 block (SCOPE_FOR VARIABLES) # Setting internal variables
   message(TRACE "Setting internal variables")
-  set(IXM_FILES_DIR "${CMAKE_BINARY_DIR}/IXMFiles" CACHE INTERNAL "")
+  set(IXM_FILES_DIR "${CMAKE_BINARY_DIR}/.ixm" CACHE INTERNAL "")
   set(IXM_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "IXM Root Directory")
 endblock()
 
