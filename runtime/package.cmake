@@ -215,7 +215,6 @@ function (ixm::package::target)
       PROPERTIES
         IMPORTED_LOCATION "${location}"
         VERSION "${version}")
-
   endif()
 endfunction()
 
