@@ -1,0 +1,47 @@
+# Each set is here for easier debugging purposes.
+# Each 'set' in the original template file has a purpose, even if the syntax
+# seems unobvious.
+set(ignore-filename-regex $<QUOTE>$<JOIN:$<GENEX_EVAL:$<TARGET_PROPERTY:COVERAGE_LLVM_EXPORT_IGNORE_FILENAME_REGEX>>,|>$<QUOTE>)
+set(demangler $<$<TARGET_EXISTS:Coverage::LLVM::C++Filter>:$<QUOTE>-Xdemangler=$<TARGET_PROPERTY:Coverage::LLVM::C++Filter,IMPORTED_LOCATION>$<QUOTE>>)
+set(llvm-cov $<QUOTE>$<TARGET_PROPERTY:Coverage::Report::LLVM,IMPORTED_LOCATION>$<QUOTE>)
+set(output $<QUOTE>$<GENEX_EVAL:$<TARGET_PROPERTY:COVERAGE_LLVM_INSTRUMENTED_FILENAME>>$<QUOTE>)
+set(report $<QUOTE>$<GENEX_EVAL:$<TARGET_PROPERTY:COVERAGE_REPORT_LOCATION>>$<QUOTE>)
+set(format $<LOWER_CASE:$<GENEX_EVAL:$<TARGET_PROPERTY:COVERAGE_REPORT_FORMAT>>>)
+set(echo $<IF:$<BOOL:$<TARGET_PROPERTY:COVERAGE_REPORT_SCRIPT_ECHO>>,STDOUT,NONE>)
+
+set(objects
+  $<JOIN:$<LIST:TRANSFORM,$<LIST:TRANSFORM,$<JOIN:$<TARGET_PROPERTY:COVERAGE_LLVM_INSTRUMENTED_EXECUTABLES>,$<SEMICOLON>>,REPLACE,(.+),$<QUOTE>\1$<QUOTE>>,PREPEND,--object >,
+  >)
+
+# To whoever is reading this nightmare in the template script, I'm sorry.
+# It makes the final script output easier to read, I promise.
+set(sources
+  $<JOIN:$<LIST:TRANSFORM,$<LIST:TRANSFORM,$<LIST:FILTER,$<TARGET_PROPERTY:COVERAGE_LLVM_INSTRUMENTED_SOURCES>,EXCLUDE,cmake_pch>,REPLACE,(.+),$<QUOTE>\1$<QUOTE>>,PREPEND,--sources >,
+  >)
+
+if (format STREQUAL "json")
+  set(format text)
+endif()
+
+execute_process(
+  COMMAND "${llvm-cov}"
+    export
+    "--format=${format}"
+    "--instr-profile=${output}"
+    "--ignore-filename-regex=(${ignore-filename-regex})"
+    ${demangler}
+    ${objects}
+    ${sources}
+  COMMAND_ECHO ${echo}
+  ENCODING UTF-8
+  ERROR_VARIABLE error
+  RESULT_VARIABLE status
+  OUTPUT_FILE ${report}
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  ERROR_STRIP_TRAILING_WHITESPACE)
+
+if (NOT status EQUAL 0)
+  message(SEND_ERROR "Failed to export coverage report. ${llvm-cov} returned ${status}:\n" ${error})
+  cmake_language(EXIT ${status})
+endif()
+message(NOTICE "Exporting coverage information to " ${report})

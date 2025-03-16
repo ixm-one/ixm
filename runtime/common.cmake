@@ -58,15 +58,48 @@ function (🈯::ixm::experiment name uuid)
   endif()
 endfunction()
 
-#[[Used to set missing arguments to a well known default]]
-macro(🈯::ixm::default var default)
-  if (NOT ${var})
-    set(${var} ${default})
+function (ixm::target::property property)
+  cmake_parse_arguments(ARG "CONTEXT" "TARGET;OUTPUT_VARIABLE" "PREFIX" ${ARGN})
+  cmake_language(CALL 🈯::ixm::default ARG_OUTPUT_VARIABLE ${property})
+  string(JOIN _ property ${ARG_PREFIX} ${property})
+
+  set(eval GENEX_EVAL:)
+  set(target)
+  if (ARG_TARGET)
+    set(target "${ARG_TARGET},")
   endif()
-endmacro()
+  if (ARG_TARGET AND ARG_CONTEXT)
+    set(eval TARGET_GENEX_EVAL:${target})
+  endif()
+
+  set(${ARG_OUTPUT_VARIABLE} $<${eval}$<TARGET_PROPERTY:${target}${property}>> PARENT_SCOPE)
+endfunction()
+
+function (🈯::ixm::requires::choice name)
+  if (NOT ARG_${name} IN_LIST ARGN)
+    list(JOIN valid ", " valid)
+    message(FATAL_ERROR "Argument '${name}' must be one of the following: ${valid}")
+  endif()
+endfunction()
+
+#[[Used to set missing arguments to a well known default]]
+function (🈯::ixm::default var)
+  cmake_parse_arguments("" "$*" "" "" ${ARGN})
+  if (NOT ${var} AND NOT _$*)
+    set(${var} ${ARGN})
+  elseif (NOT ${var} AND _$*)
+    string(CONCAT ${var} ${_UNPARSED_ARGUMENTS})
+  endif()
+  return(PROPAGATE ${var})
+endfunction()
 
 macro(🈯::ixm::requires name)
   if (NOT ARG_${name})
     message(FATAL_ERROR "function '${CMAKE_CURRENT_FUNCTION}' requires a '${name}' argument")
   endif()
+endmacro()
+
+# Friendly wrapper :>
+macro(ixm_target_property)
+  cmake_language(CALL ixm::target::property ${ARGN})
 endmacro()
