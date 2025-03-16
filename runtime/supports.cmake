@@ -14,7 +14,7 @@ function (🈯::ixm::supports::unicode)
   # We're running under cmake-gui so we can just leave early
   if (CMAKE_EDIT_COMMAND MATCHES "cmake-gui")
     set(IXM_SUPPORTS_UNICODE YES)
-    return(PRPAGATE IXM_SUPPORTS_UNICODE)
+    return(PROPAGATE IXM_SUPPORTS_UNICODE)
   endif()
 
   if ("$ENV{TERM}" STREQUAL "linux")
