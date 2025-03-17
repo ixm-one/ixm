@@ -28,7 +28,7 @@ function (ixm::feature)
   cmake_language(CALL 🈯::ixm::requires NAME)
   cmake_language(CALL 🈯::ixm::feature::requirements)
 
-  cmake_language(CALL 🈯::ixm::default ARG_DEFAULT NO)
+  ixm_fallback(ARG_DEFAULT NO)
 
   if (ARG_PROJECT_ONLY)
     list(APPEND requirements PROJECT_IS_TOP_LEVEL)

@@ -25,7 +25,7 @@ include_guard(GLOBAL)
 #]============================================================================]
 function (ixm::find::program)
   cmake_language(CALL 🈯::ixm::find::prologue "" "" "VERSION" ${ARGN})
-  cmake_language(CALL 🈯::ixm::default ARG_OUTPUT_VARIABLE ${name}_EXECUTABLE)
+  ixm_fallback(ARG_OUTPUT_VARIABLE ${name}_EXECUTABLE)
 
   find_program(${ARG_OUTPUT_VARIABLE} NAMES ${ARG_NAMES} ${ARG_UNPARSED_ARGUMENTS})
   cmake_language(CALL 🈯::ixm::find::log)
@@ -33,7 +33,7 @@ function (ixm::find::program)
 
   if (ARG_VERSION AND ARG_OUTPUT_VARIABLE)
     cmake_parse_arguments(VERSION "" "OPTION;REGEX;VARIABLE;DESCRIPTION" "" ${ARG_VERSION})
-    cmake_language(CALL 🈯::ixm::default VERSION_VARIABLE ${name}_VERSION)
+    ixm_fallback(VERSION_VARIABLE ${name}_VERSION)
     cmake_language(CALL 🈯::ixm::find::version
       OUTPUT_VARIABLE ${VERSION_VARIABLE}
       DESCRIPTION "${VERSION_DESCRIPTION}"
@@ -64,11 +64,11 @@ endfunction()
 #]============================================================================]
 function (ixm::find::library)
   cmake_language(CALL 🈯::ixm::find::prologue "" "" "HEADER" ${ARGN})
-  cmake_language(CALL 🈯::ixm::default ARG_OUTPUT_VARIABLE ${name}_LIBRARY)
+  ixm_fallback(ARG_OUTPUT_VARIABLE ${name}_LIBRARY)
 
   if (DEFINED ARG_HEADER)
     cmake_parse_arguments(HEADER "" "VARIABLE" "" ${ARG_HEADER})
-    cmake_language(CALL 🈯::ixm::default HEADER_VARIABLE ${name}_INCLUDE_DIR)
+    ixm_fallback(HEADER_VARIABLE ${name}_INCLUDE_DIR)
   endif()
 
   find_library(${ARG_OUTPUT_VARIABLE} NAMES ${ARG_NAMES} ${ARG_UNPARSED_ARGUMENTS})
@@ -101,7 +101,7 @@ endfunction()
 #]============================================================================]
 function (ixm::find::header)
   cmake_language(CALL 🈯::ixm::find::prologue "" "" "" ${ARGN})
-  cmake_language(CALL 🈯::ixm::default ARG_OUTPUT_VARIABLE ${name}_INCLUDE_DIR)
+  ixm_fallback(ARG_OUTPUT_VARIABLE ${name}_INCLUDE_DIR)
 
   find_path(${ARG_OUTPUT_VARIABLE} NAMES ${ARG_NAMES} ${ARG_UNPARSED_ARGUMENTS})
   cmake_language(CALL 🈯::ixm::log)
@@ -121,10 +121,10 @@ function (ixm::find::framework)
   cmake_language(CALL 🈯::ixm::find::prologue "" "" "" ${ARGN})
   if (DEFINED ARG_HEADER)
     cmake_parse_arguments(HEADER "" "VARIABLE" "NAMES" ${ARG_HEADER})
-    cmake_language(CALL 🈯::ixm::default HEADER_VARIABLE ${name}_INCLUDE_DIR)
+    ixm_fallback(HEADER_VARIABLE ${name}_INCLUDE_DIR)
 
     # check what name is
-    cmake_language(CALL 🈯::ixm::default HEADER_NAMES "${name}/${name}.h")
+    ixm_fallback(HEADER_NAMES "${name}/${name}.h")
   endif()
   find_library(${ARG_OUTPUT_VARIABLE} NAMES ${ARG_NAMES} ${ARG_UNPARSED_ARGUMENTS})
   find_path(${HEADER_VARIABLE} NAMES ${HEADER_NAMES} ${ARG_UNPARSED_ARGUMENTS})
@@ -139,9 +139,9 @@ endfunction()
 function (🈯::ixm::find::version)
   cmake_parse_arguments(ARG "" "QUIET;OUTPUT_VARIABLE;DESCRIPTION;COMMAND;OPTION;REGEX" "" ${ARGN})
   cmake_language(CALL 🈯::ixm::requires OUTPUT_VARIABLE)
-  cmake_language(CALL 🈯::ixm::default ARG_DESCRIPTION "${ARG_COMMAND} version")
-  cmake_language(CALL 🈯::ixm::default ARG_OPTION "--version")
-  cmake_language(CALL 🈯::ixm::default ARG_REGEX
+  ixm_fallback(ARG_DESCRIPTION "${ARG_COMMAND} version")
+  ixm_fallback(ARG_OPTION "--version")
+  ixm_fallback(ARG_REGEX
     # This is a magic regex. It works in 95% of all cases.
     "[^0-9]*([0-9]+)[.]([0-9]+)?[.]?([0-9]+)?[.]?([0-9]+)?.*")
   if (NOT IS_EXECUTABLE "${ARG_COMMAND}")
@@ -206,11 +206,11 @@ macro (🈯::ixm::find::prologue options monadic variadic)
     ${ARGN})
 
   if (CMAKE_FIND_PACKAGE_NAME)
-    cmake_language(CALL 🈯::ixm::default ARG_NAMES ${CMAKE_FIND_PACKAGE_NAME})
+    ixm_fallback(ARG_NAMES ${CMAKE_FIND_PACKAGE_NAME})
     block (SCOPE_FOR VARIABLES PROPAGATE ARG_DESCRIPTION)
       list(LENGTH ARG_NAMES length)
       if (length EQUAL 1)
-        cmake_language(CALL 🈯::ixm::default ARG_DESCRIPTION "Path to ${ARG_NAMES}")
+        ixm_fallback(ARG_DESCRIPTION "Path to ${ARG_NAMES}")
       endif()
     endblock()
 
