@@ -2,8 +2,7 @@
   "extends": [
     "config:recommended",
     "npm:unpublishSafe",
-    ":gitSignOff",
-    ":semanticCommitScope(package)"
+    ":gitSignOff"
   ],
   "schedule": ["after 12pm on sunday"],
   "labels": ["renovate:dependencies"],
