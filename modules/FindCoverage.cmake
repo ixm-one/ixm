@@ -139,12 +139,12 @@ file
 ]============================================================================]
 function (add_llvm_coverage name)
   cmake_parse_arguments(ARG "ALL" "EXPORT;OUTPUT;FORMAT;GITHUB" "TARGETS;IGNORE_FILENAME_REGEX" ${ARGN})
-  cmake_language(CALL 🈯::ixm::default ARG_EXPORT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${name}.lcov.info")
-  cmake_language(CALL 🈯::ixm::default ARG_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${name}.profdata")
-  cmake_language(CALL 🈯::ixm::default ARG_FORMAT lcov)
+  ixm_fallback(ARG_EXPORT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${name}.lcov.info")
+  ixm_fallback(ARG_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${name}.profdata")
+  ixm_fallback(ARG_FORMAT lcov)
   # Can't really remember why there's a ARG_GITHUB. Probably for
   # uploading/writing to a step summary automatically?
-  cmake_language(CALL 🈯::ixm::default ARG_GITHUB "${name}")
+  ixm_fallback(ARG_GITHUB "${name}")
   set(ignore.filename.regex $<GENEX_EVAL:$<TARGET_PROPERTY:${name},LLVM_IGNORE_FILENAME_REGEX>>)
   set(test.executables $<GENEX_EVAL:$<TARGET_PROPERTY:${name},LLVM_TEST_EXECUTABLES>>)
   set(profraw.sources $<GENEX_EVAL:$<TARGET_PROPERTY:${name},LLVM_PROFRAW_SOURCES>>)

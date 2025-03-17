@@ -58,15 +58,22 @@ function (🈯::ixm::experiment name uuid)
   endif()
 endfunction()
 
-#[[Used to set missing arguments to a well known default]]
-macro(🈯::ixm::default var default)
-  if (NOT ${var})
-    set(${var} ${default})
-  endif()
-endmacro()
-
 macro(🈯::ixm::requires name)
   if (NOT ARG_${name})
     message(FATAL_ERROR "function '${CMAKE_CURRENT_FUNCTION}' requires a '${name}' argument")
   endif()
 endmacro()
+
+#[============================================================================[
+# @summary Sets a default fallback value for a variable if it is not defined.
+# @description This is intended to be used inside of `function()`s after a call
+# to `cmake_parse_arguments`. While there is technically nothing stopping its
+# use in a general scope, users will most likely not receive this functions
+# benefits.
+# @param {identifier} variable - name of variable to set a fallback value for.
+#]============================================================================]
+function (ixm_fallback variable)
+  if (NOT DEFINED ${variable})
+    set(${variable} ${ARGN} PARENT_SCOPE)
+  endif()
+endfunction()
