@@ -38,7 +38,7 @@ well as `$<TARGET_PROPERTY:property>`.
 : Name of the property to create the generator expression for.
 
 
-### Keyword Parameters {#property/required}
+### Keyword Parameters {#property/keyword}
 
 `CONTEXT`
 : *Type*: `option`
