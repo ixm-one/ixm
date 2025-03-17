@@ -77,3 +77,36 @@ function (ixm_fallback variable)
     set(${variable} ${ARGN} PARENT_SCOPE)
   endif()
 endfunction()
+#[============================================================================[
+# @summary Creates a generator expression for reading from a target property.
+# @description This command permits creating generator expressions for targets
+# that are *not yet defined*, even if the `TARGET` parameter is passed in.
+#
+# @param {identifier} property - Name of the property to create generator
+# expression for.
+# @param {option} [CONTEXT] - Use `TARGET_GENEX_EVAL` instead of `GENEX_EVAL`.
+# Does nothing if `TARGET` has not been specified.
+# @param {target} [TARGET] - Name of a target to use for context and scope.
+# @param {identifier} [OUTPUT_VARIABLE=${property}] - Name of the variable to
+# output.
+# @param {list} [PREFIX] - Additional prefixes to prepend to the property.
+# These are joined via the `_` character. Useful if `OUTPUT_VARIABLE` is not
+# provided, as this allows for more complex property generator expressions with
+# simple output variables.
+#]============================================================================]
+function (ixm_property property)
+  cmake_parse_arguments(PARSE_ARGV 1 ARG "CONTEXT" "TARGET;OUTPUT_VARIABLE" "PREFIX")
+  ixm_fallback(ARG_OUTPUT_VARIABLE ${property})
+  string(JOIN _ property ${ARG_PREFIX} ${property})
+
+  set(eval GENEX_EVAL:)
+  set(target)
+  if (ARG_TARGET)
+    set(target "${ARG_TARGET},") # note the `,` at the end of the string
+    if (ARG_CONTEXT)
+      set(eval TARGET_GENEX_EVAL:${target})
+    endif()
+  endif()
+
+  set(${ARG_OUTPUT_VARIABLE} "$<${eval}$<TARGET_PROPERTY:${target}${property}>>" PARENT_SCOPE)
+endfunction()

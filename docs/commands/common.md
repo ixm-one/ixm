@@ -21,8 +21,51 @@ set is whatever is passed after the `variable` argument (i.e., [`ARGN`][argn]).
 ### Required Parameters {#fallback/required}
 
 `variable`
-: Name of the variable to store values in.
 : *Type*: `identifier`
+: Name of the variable to store values in.
+
+## `ixm_property`
+
+Creates a generator expression for reading from a target property, as well as
+ensuring that any resulting values from said generator expression are also
+evaluated. Supports both the `$<TARGET_PROPERTY:target,property>` format, as
+well as `$<TARGET_PROPERTY:property>`.
+
+### Required Parameters {#property/required}
+
+`property`
+: *Type*: `identifier`
+: Name of the property to create the generator expression for.
+
+
+### Keyword Parameters {#property/required}
+
+`CONTEXT`
+: *Type*: `option`
+: Use `TARGET_GENEX_EVAL` instead of `GENEX_EVAL` for the generator expression.
+
+`TARGET`
+: *Type*: `target`
+: Name of target or a generator expression that evaluates to a target name.
+
+`OUTPUT_VARIABLE`
+: *Type*: `identifier`
+: *Default: `${property}`
+: Name of the variable to write the generator expression to.
+
+`PREFIX`
+: *Type*: `identifier[]`
+: Any number of identifiers to prefix to the property. These are joined via the
+  `_` character, and are most useful when the `OUTPUT_VARIABLE` argument isn't
+  used and the user wishes to use the provided `property` instead.
+
+### Example
+
+```cmake
+ixm_property(IMPORTED_LOCATION TARGET ccache::ccache)
+set_property(TARGET ${PROJECT_NAME} PROPERTY
+  CXX_COMPILER_LAUNCHER ${IMPORTED_LOCATION})
+```
 
 ## `ixm::unimplemented`
 
