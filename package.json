@@ -21,7 +21,7 @@
     "globals": "^16.0.0",
     "husky": "^9.1",
     "is-ci": "^4.0",
-    "lint-staged": "^15.2",
+    "lint-staged": "^16.0.0",
     "markdown-it-deflist": "^3.0",
     "markdown-it-footnote": "^4.0",
     "mermaid": "^11.4.1",
