@@ -46,7 +46,7 @@ the installation.
 ### Ubuntu Based Systems
 
 As of CMake 3.14, Kitware has begun maintaining an `apt` repository. Directions
-on installing CMake this way can be found [here][2]. However, the indstructions
+on installing CMake this way can be found [here][2]. However, the instructions
 provided are a bit out of date for modern tooling. Instead, the author of IXM
 recommends you perform the following operations instead:
 
@@ -59,7 +59,7 @@ $ sudo apt update
 $ sudo apt install cmake
 ```
 
-This approach permmis users to not have to "dearmor" the
+This approach permits users to not have to "dearmor" the
 `kitware-archive-latest.asc` key. `apt` (and `apt-get` will automatically
 handle the GPG "armor" format without issue as long as the file was placed into
 the correct directory.

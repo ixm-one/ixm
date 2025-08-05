@@ -55,7 +55,7 @@ characters, as well as if terminal sequences for hyperlinks are an option.
 If they are, the `ixm::hyperlink` command will be able to generate ANSI
 terminal sequences that provide friendly hyperlinks. This can, in many cases,
 cut down on unnecessarily large lines in a user's terminal when CMake is
-outputing text.
+outputting text.
 
 ### Customization
 
