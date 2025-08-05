@@ -1,7 +1,7 @@
 ---
 title: Generator Expressions
 order: 4
-description: An opionated guide on the use of generator expressions in CMake.
+description: An opinionated guide on the use of generator expressions in CMake.
 ---
 
 # Generator Expressions
