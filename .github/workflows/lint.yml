@@ -17,7 +17,7 @@ jobs:
     name: Typos
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
-      - uses: reviewdog/action-typos@627388e238f182b925d9acd151432f9b68f1d666 # v1
+      - uses: reviewdog/action-typos@fe961cdbe416990b23bc1597325891575ef2dd7c # v1
         with:
           typos_flags: --config ${{github.workspace}}/.github/typos.toml
           reporter: github-pr-review
