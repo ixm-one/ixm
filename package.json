@@ -10,8 +10,8 @@
     "lint:staged": "npx lint-staged"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.6",
-    "@commitlint/config-conventional": "^19.6",
+    "@commitlint/cli": "^20.0.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@eslint/js": "^9.15",
     "@eslint/json": "^0.13.0",
     "@eslint/markdown": "^7.0.0",
