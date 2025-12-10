@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Actions
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       - uses: reviewdog/action-actionlint@83e4ed25b168066ad8f62f5afbb29ebd8641d982 # v1
         with:
           reporter: github-pr-review
@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Typos
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       - uses: reviewdog/action-typos@d5eb1bbcd1b3bfde596f6eeb470322727862fe98 # v1
         with:
           typos_flags: --config ${{github.workspace}}/.github/typos.toml
@@ -37,7 +37,7 @@ jobs:
     needs: skip-renovate
     if: needs.skip-renovate.outputs.should-skip != 'true'
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6
       - run: npm exec --package=renovate -- renovate-config-validator
 
