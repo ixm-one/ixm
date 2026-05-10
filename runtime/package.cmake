@@ -149,9 +149,11 @@ function (ixm::package::import)
   set(prefix ${CMAKE_FIND_PACKAGE_NAME})
 
   get_property(components GLOBAL PROPERTY ${prefix}::components)
+  list(REMOVE_DUPLICATES components)
 
   foreach (component IN LISTS components)
     get_property(targets GLOBAL PROPERTY ${prefix}::${component}::targets)
+    list(REMOVE_DUPLICATES targets)
     foreach (target IN LISTS targets)
       cmake_language(CALL ixm::package::target
         COMPONENT ${component}
@@ -159,6 +161,7 @@ function (ixm::package::import)
     endforeach()
   endforeach()
   get_property(targets GLOBAL PROPERTY ${prefix}::targets)
+  list(REMOVE_DUPLICATES targets)
   foreach (target IN LISTS targets)
     cmake_language(CALL ixm::package::target TARGET ${target})
   endforeach()

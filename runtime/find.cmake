@@ -94,7 +94,7 @@ endfunction()
 # @description This function is *typically* used for finding header files. As a
 # result, when the function is called inside of a `find_package(MODULE)` file,
 # it will perform bookkeeping for automatic component discovery and creating
-# imported targets *as if the file being searched for will be included via the
+# imported targets *as if* the file being searched for will be included via the
 # C/C++ preprocessor.
 # TODO: This function needs to be broken up into ::header and ::path. We want
 # to accept more than just headers for searches
@@ -104,7 +104,7 @@ function (ixm::find::header)
   ixm_fallback(ARG_OUTPUT_VARIABLE ${name}_INCLUDE_DIR)
 
   find_path(${ARG_OUTPUT_VARIABLE} NAMES ${ARG_NAMES} ${ARG_UNPARSED_ARGUMENTS})
-  cmake_language(CALL 🈯::ixm::log)
+  cmake_language(CALL 🈯::ixm::find::log)
   cmake_language(CALL 🈯::ixm::find::properties ${prefix}::{${target}}::include)
 endfunction()
 
@@ -193,7 +193,7 @@ function (🈯::ixm::find::log)
     endif()
     message(CONFIGURE_LOG
       "${call-site}: ${ARG_OUTPUT_VARIABLE}"
-      "= ${${ARG_OUTPUT_VARIABLE}}")
+      "=${${ARG_OUTPUT_VARIABLE}}")
   endif()
 endfunction()
 
